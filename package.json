@@ -1,0 +1,15 @@
+{
+  "name": "brainpool-os",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "BRAINPOOL Core Engine",
+  "exports": {
+    "./hajun":      "./hajun/router.js",
+    "./contracts":  "./contracts/ctx.js",
+    "./connectors": "./connectors/storage.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "engines": { "node": ">=18" }
+}
