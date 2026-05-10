@@ -1,6 +1,5 @@
-﻿// engines/chat/index.js
-import { errorCtx } from '../../contracts/ctx.js';
-export async function createRoom(ctx) {
-    // TODO: Implement
-    return errorCtx(ctx, 'NOT_IMPLEMENTED', 'chat engine 준비중');
-}
+﻿@'
+export { run as room } from './room.js';
+export { run as message } from './message.js';
+export { run as poll } from './poll.js';
+'@ | Set-Content C:\brainpool-os\engines\chat\index.js -Encoding UTF8

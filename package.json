@@ -1,15 +1,20 @@
+@'
 {
   "name": "brainpool-os",
   "version": "0.1.0",
   "type": "module",
   "description": "BRAINPOOL Core Engine",
   "exports": {
-    "./hajun":      "./hajun/router.js",
-    "./contracts":  "./contracts/ctx.js",
-    "./connectors": "./connectors/storage.js"
+    "./hajun":      { "import": "./hajun/router.js" },
+    "./contracts":  { "import": "./contracts/ctx.js" },
+    "./connectors": { "import": "./connectors/storage.js" },
+    "./chat/room":    { "import": "./engines/chat/room.js" },
+    "./chat/message": { "import": "./engines/chat/message.js" },
+    "./chat/poll":    { "import": "./engines/chat/poll.js" }
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"
   },
   "engines": { "node": ">=18" }
 }
+'@ | Set-Content C:\brainpool-os\package.json -Encoding UTF8
