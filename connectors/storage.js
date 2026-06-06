@@ -1,5 +1,4 @@
-@'
-import { createClient } from '@supabase/supabase-js';
+﻿import { createClient } from '@supabase/supabase-js';
 
 let _client = null;
 
@@ -16,4 +15,3 @@ export function getSupabase() {
   });
   return _client;
 }
-'@ | Set-Content C:\brainpool-os\connectors\storage.js -Encoding UTF8
