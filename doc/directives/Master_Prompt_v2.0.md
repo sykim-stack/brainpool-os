@@ -1,6 +1,6 @@
 # BRAINPOOL OS 마스터 통합 문서 v2.1 (Constitution)
 
-**작성자**: 클로2 (설계 담당)  
+**작성자**: 클로 (설계 담당)  
 **날짜**: 2026-07-16  
 **상태**: Active (Single Source of Truth)
 
