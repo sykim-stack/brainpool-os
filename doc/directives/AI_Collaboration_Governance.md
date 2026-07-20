@@ -12,6 +12,7 @@
 | Level | Document | Role |
 | :--- | :--- | :--- |
 | **Level 0** | `Master_Prompt_v2.0` | **Constitution** (프로젝트 철학 및 최상위 헌법) |
+| **Level 1** | `Identity_Platform_Architecture_v1.0` | **Platform Infrastructure** (신원 및 소유권 체계) |
 | **Level 1** | `Governance_Foundation` | **Operations** (운영 원칙 및 아키텍처 가이드) |
 | **Level 2** | `AI_Collaboration_Governance` | **Standard SOP** (AI 협업 표준 절차 및 거버넌스) |
 | **Level 3** | `Agents_Directive` | **Responsibility** (에이전트별 역할 및 책임) |
