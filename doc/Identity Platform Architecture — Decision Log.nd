@@ -1,0 +1,131 @@
+# Identity Platform Architecture — Decision Log
+
+**날짜**: 2026-07-19
+**참여**: 여리 (총괄) / 보카 (ChatGPT) / 클로 (총괄 검토)
+**출발점**: link_codes(임시 동기화) 보완 논의 → Identity Platform 전체 재설계로 확장
+**상태**: 3자 합의 완료. 문서 초안 작업 대기.
+
+---
+
+## 배경 한 줄 요약
+
+"로그인을 어떻게 만들까"에서 시작해, "Identity Platform이 무엇이고 BRAINPOOL은 그 위에서 House를 어떻게 표현하는가"까지 올라감. 로그인 기능 설계가 아니라 플랫폼 기반 재정의.
+
+기존 `Identity & Ownership Architecture v3.0` (보카 초안) 검토 중, CoreNull이 어느 정도 완성된 시점이라 예전에 막혔던 지점(공유방에서 방법론 부재)의 해결책이 자연스럽게 도출됨.
+
+---
+
+## 확정 사항
+
+### ① LinkCredential — Identity Primitive로 확정 (Now, Future 아님)
+
+초대(invite)와 복구(recover)는 별개 메커니즘이 아니라 **같은 Primitive의 target 차이**임.
+
+```text
+LinkCredential
+  code
+  target: invite | recover | share (확장 가능)
+  expires_at
+  issuer_owner_key
+  receiver_owner_key (optional)
+  room_id (optional)
+```
+
+- `InviteCode`, `RecoveryCode`, `ShareCode`를 별도로 만들지 않는다.
+- target 값만 늘려서 확장한다.
+- 기존 `link_codes` 테이블/`/api/identity` 라우트에 target 필드 추가 방식으로 구현 예정 (클로3/5 작업지시서 시 반영).
+
+### ② 신규 문서로 분리 (버전업 아님)
+
+- 기존 `Identity & Ownership Architecture v3.0` → **범위가 다름** (Identity↓Ownership vs Identity Platform↓Application↓Primitive)
+- 새 문서명: `Identity_Platform_Architecture_v1.0.md`
+- 기존 문서는 폐기가 아니라 **Superseded 상태로 보존**, 헤더에 명시:
+
+```md
+Status: Superseded
+Superseded by: Identity_Platform_Architecture_v1.0
+Reason: Identity Architecture 범위를 Platform 수준으로 확장.
+        Ownership은 Platform Architecture의 하위 챕터로 편입.
+```
+
+- Hierarchy 표(`AI_Collaboration_Governance.md` Level 0~4)에도 실제 반영 필요 — 문서만 새로 쓰고 끝내지 않는다.
+
+### ③ Commerce / International 등 — Example 처리 (로드맵 아님)
+
+```text
+Examples
+• BRAINPOOL
+• Commerce (Example)
+• Healthcare (Example)
+• Education (Example)
+• CoreCoop (Future Example)
+```
+
+"Identity Platform은 특정 서비스에 종속되지 않는다"를 설명하는 예시일 뿐, 사업 커밋 아님. Business Priority는 Planning 소관(Master Prompt Section 5)이므로 Architecture 문서가 앞서가지 않는다.
+
+### ⭐ Application Primitive — 챕터로만 (독립 문서 승격 보류)
+
+Registry 개념 자체는 맞는 방향이나, 지금 실제 존재하는 Application이 BRAINPOOL 하나뿐이라 독립 문서로 승격할 만큼 검증되지 않음. `Evolution over Expansion` 원칙 적용.
+
+새 문서 내 **Chapter 9**로만 삽입:
+
+```md
+## Chapter 9. Application Primitive (Future)
+
+Application은 자신의 Primitive를 가진다.
+Identity Platform은 Primitive를 알지 않는다.
+Primitive는 Application의 책임이다.
+```
+
+- "Registry"라는 단어도 아직 실체가 없으므로 쓰지 않는다.
+- 두 번째 실제 Application이 구체화될 때 독립 문서 승격을 재검토한다.
+
+---
+
+## 작업 순서 — 병렬 트랙
+
+Architecture 문서 작업과 Development 작업은 서로 기다릴 이유가 없음. 병렬 진행.
+
+```text
+Architecture Track          Development Track
+──────────────────         ──────────────────
+1. Identity Platform 문서    (CoreNull 이미지 버그
+   확정                       — 이미 해결됨 ✓)
+2. Hierarchy 표 갱신
+3. CoreRing SEO 구현
+   (ADR-SEO-001 승인 완료,
+   클로5 작업지시서 기발행)
+```
+
+---
+
+## Next Step
+
+- [ ] `Identity_Platform_Architecture_v1.0.md` 초안 작성 (보카 원안 + 오늘 합의 사항 반영)
+- [ ] 기존 v3.0 문서에 Superseded 헤더 삽입
+- [ ] `AI_Collaboration_Governance.md` Hierarchy 표 갱신
+- [x] LinkCredential target 필드 추가 — 클로3(CoreNull) 작업지시서 발행 및 DB/API 구현 완료 (2026-07-19)
+
+---
+
+## 후속 업데이트 (2026-07-19, 같은 날 저녁)
+
+Decision Log 작성 이후 CoreNull 실작업이 진행되어 아래 항목이 추가로 확정/완료됨.
+
+### CoreRing SEO — 완료 (TASK-03~06)
+- robots.ts 정리, sitemap.ts(public 방만), `/rooms/{id}` SSR(redirect 없음), canonical/OG/Twitter, noindex fail-safe, ShareRoomModal 공유 URL 통일, JSON-LD(SoftwareApplication + DiscussionForumPosting) — 전부 코드 반영·배포·검증 완료.
+- ADR-SEO-001이 문서상 원칙에서 실제 구현/검증 완료 상태로 전환됨.
+
+### House 구조 재설계 — 완료
+오늘 낮에 스크린샷으로 발견된 문제(House가 사용자 생성 객체로 취급되어 한국집/베트남집/테스트 등 중복 생성, 방 목록 화면 부재)가 같은 날 해결됨.
+
+- **1인 1집 강제**: DB 레벨(unique 제약) + API 레벨(idempotent POST) 이중 강제. 오늘 확정한 `One owner_key = One House` 원칙이 코드 레벨에서 재발 불가능한 형태로 구현됨.
+- **홈 화면 = 방 목록 우선**: House가 아니라 Room 목록이 진입 화면이 되도록 재구성. `House는 생성하지 않는다, Room을 생성한다` UX 원칙과 일치.
+- 테스트로 쌓인 중복 House, 깨진 방("CoreHub ??? ???") 데이터 정리 완료.
+- 원인: CoreRing 담당이 언어별(ko/vi) 처리 중 House 단위까지 잘못 분리 + 테스트 데이터가 고정된 것으로 추정 (여리 직접 확인 및 처리).
+
+### 갱신된 Next Step
+- [ ] `Identity_Platform_Architecture_v1.0.md` 초안 작성 — House UX 원칙(1인 1집) 실제 구현 사례를 문서에 반영
+- [ ] 기존 v3.0 문서에 Superseded 헤더 삽입
+- [ ] `AI_Collaboration_Governance.md` Hierarchy 표 갱신
+- [ ] Agent_Repo_Mapping.md에 "Identity 코드는 corenull 저장소 위치, 개념은 Platform-level" 명시 (클로3 작업지시서 항목)
