@@ -512,3 +512,14 @@ Next Step
 [ ] Agent_Repo_Mapping 반영
 
 [ ] clo3.md 업데이트
+
+## Architecture Note
+
+본 ADR은 CoreNull의 첫 번째 공식 Access Policy를 정의한다.
+
+향후 House, Room, Post, Seed를 포함한 모든 CoreNull 리소스는
+본 ADR에서 정의한 Access Policy를 공통 기준으로 사용한다.
+
+새로운 접근 제어 요구사항이 발생하더라도,
+기존 Primitive를 우선 재사용하며,
+새 Primitive는 마지막 선택(New Primitive is the Last Choice)으로 한다.
