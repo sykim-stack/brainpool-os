@@ -17,7 +17,8 @@ _PM: Grok_
 | **3** | `directives/Agents_Directive.md` | 에이전트 역할·권한 |
 | **3** | `contexts/clo2.md` / `clo3.md` | 에이전트 Context Contract |
 | **4** | `adr/` | 개별 설계 결정 |
-| **Status** | `status/DEV_CONTEXT_SUMMARY.md` | 현재 진행 상태 (PM이 갱신) |
+| **Status** | `status/DEV_CONTEXT_SUMMARY.md` | 현재 진행 상태 |
+| **Status** | `status/CORENULL_ROADMAP.md` | CoreNull Phase A 실행 로드맵 |
 
 ## 폴더별 유효 문서
 
@@ -35,7 +36,7 @@ _PM: Grok_
 
 ### contexts/
 - `clo2.md` — HajunAI (승인 완료)
-- `clo3.md` — CoreNull (승인 대기였음, 상태 확인 필요)
+- `clo3.md` — CoreNull
 
 ### automation/
 - `WORKFLOW.md` — Commit = 상태 변화 이벤트 운영 모델
@@ -47,19 +48,16 @@ _PM: Grok_
 - `ADR-ACCESS-001.md`
 
 ### status/
-- `DEV_CONTEXT_SUMMARY.md` — **가장 자주 보는 문서** (현재 상태)
+- `DEV_CONTEXT_SUMMARY.md` — **가장 자주 보는 문서**
+- `CORENULL_ROADMAP.md` — CoreNull Phase A 실행 순서
 
 ### root of doc/
 - `Identity Platform Architecture — Decision Log.md` — Identity 결정 로그
 
 ## 삭제된 문서 (2026-08-01)
-- `API.md` (빈 파일)
-- `영주-코어라이프 빌리지*` (빈 파일)
-- `Identity Platform Architecture — Decision Log.nd` (중복)
-- `BRAINPOOL-OS-통합-마스터-문서.md` (v1.1, Master_Prompt로 대체)
-- `ARCHITECTURE.md` (구버전)
-- `CHANGELOG.md` (2026-05에서 멈춤)
-- `directives/Identity_Ownership_Architecture_v3.0.md` (Superseded)
+- `API.md`, `영주-코어라이프 빌리지*`, `Identity Platform Architecture — Decision Log.nd`
+- `BRAINPOOL-OS-통합-마스터-문서.md`, `ARCHITECTURE.md`, `CHANGELOG.md`
+- `directives/Identity_Ownership_Architecture_v3.0.md`
 
 ---
 *새 문서를 추가할 때는 이 Index에도 한 줄 추가한다.*
