@@ -1,5 +1,5 @@
 # CoreNull 실행 로드맵
-_기준일: 2026-07-31_
+_기준일: 2026-07-31 / 갱신: 2026-08-01_
 _수신: 클로3 (코어널)_
 _상태: Active — Phase A 실행 중_
 
@@ -31,10 +31,23 @@ _상태: Active — Phase A 실행 중_
 ```
 House (Identity가 CoreNull에서 표현되는 형태, 1인 1개, 자동생성)
   ↓
-Room (이야기가 사는 공간. Seed/Flower/Fruit는 Room의 상태일 뿐, 별도 객체 아님)
+Room (이야기가 사는 공간)
   ↓
 Post (Room 안에서만 의미 있음)
 ```
+
+### Seed / Flower / Fruit = Room 상태값 (별도 테이블·객체 아님)
+
+| 상태 | 의미 | 기술 표현 (예시) |
+| :--- | :--- | :--- |
+| **Seed** | 스스로에게 한 약속 | `seed_mode: true` + `bloom_date` |
+| **Growth** | 씨앗방 안의 기록 | Room 안 Post들 |
+| **Flower** | bloom_date 도달 | 자동 트리거 시점 |
+| **Fruit** | 주인이 수동으로 만든 경험 콘텐츠 | Post type=fruit 또는 Room 상태 전환 |
+
+**클로2(HajunAI) 주의**: `house_snapshots.content.rooms`의 `seed_mode`는
+"별도 Seed 객체"가 아니라 **Room의 상태값**으로 재해석해야 한다.
+Knowledge Unit 생성(`sync_snapshot`) 시 이 Primitive 기준에 맞춰야 함.
 
 ## 2. View Scope Architecture (CoreNull 전용 원칙)
 
@@ -107,3 +120,15 @@ Primitive → View Scope (CoreNull 책임: 무엇을 보여줄지) → Experienc
 ```
 
 Phase A 다섯 개가 끝나면 CoreNull Phase 0 (House/Yard/Library 완성)이 사실상 종료된다. 그 이후 Phase B 재검토.
+
+---
+
+## 8. 다른 Core에 대한 함의
+
+### 클로2 (HajunAI)
+- `house_snapshots.content.rooms[].seed_mode` → **Room 상태**로 해석
+- Knowledge Unit 생성(`sync_snapshot`) 시 House→Room→Post Primitive에 맞출 것
+- Seed를 별도 엔티티로 취급하지 말 것
+
+### 클로5 (CoreRing)
+- 번역/SEO는 Post·Room 단위. Primitive 변경 없음
