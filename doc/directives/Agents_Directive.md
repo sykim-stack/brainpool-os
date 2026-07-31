@@ -1,4 +1,5 @@
-# BRAINPOOL Agents Directive Summary (v1.2)
+# BRAINPOOL Agents Directive Summary (v1.3)
+_기준일: 2026-08-01_
 
 본 문서는 각 에이전트의 역할과 책임을 정의하며, 특히 PM AI의 권한 제한을 명시합니다.
 
@@ -8,14 +9,15 @@
 - **책임**: 프로젝트 비전 유지, 최종 의사결정, PR 승인
 - **Decision Owner**: Constitution, Core Responsibility
 
-## [마누스] PM AI (Project Management)
-- **책임**: 프로젝트 상태 분석, 아키텍처 린터, PM Guard
+## [PM] Grok (Project Management)
+- **책임**: 프로젝트 상태 분석, 아키텍처 린터, PM Guard, 문서 동기화
+- **역할**: Context Guardian + Drift Detection + Knowledge Synchronization
 - **권한 제한 (Forbidden Actions)**:
   - Layer 생성 및 Core Responsibility 변경 금지
   - Source of Truth 및 Pipeline Contract 변경 금지
   - Master Prompt 직접 수정 금지
   - ADR 없는 구조 변경 금지
-- **핵심 역할**: 우선순위 조율 및 아키텍처 변질(Drift) 감지 및 제안
+- **핵심 운영**: Commit을 상태 변화 이벤트로 취급 → 분석 → 문서 반영
 
 ---
 
