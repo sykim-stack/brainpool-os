@@ -3,7 +3,7 @@
 **작성자**: 클로 (설계 담당)  
 **날짜**: 2026-07-16  
 **상태**: Active (Single Source of Truth)  
-**최종 갱신**: 2026-08-01 (PM 주체 Grok으로 반영)
+**최종 갱신**: 2026-08-01 (PM 주체 Grok으로 반영 · Decision Ownership 정리)
 
 ---
 
@@ -55,7 +55,7 @@ BRAINPOOL의 데이터는 다음 흐름을 따르며, 각 단계는 `ctx`를 매
 | 영역 | Decision Owner |
 | :--- | :--- |
 | Constitution / Core Responsibility | Architecture (클로1) |
-| Business Priority | Planning (Grok + Human) |
+| Business Priority | Planning |
 | Repository Layout | Platform |
 | Automation Rules | Governance |
 | ADR Approval | Architecture + Planning |
