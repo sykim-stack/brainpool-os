@@ -2,7 +2,8 @@
 
 **작성자**: 클로 (설계 담당)  
 **날짜**: 2026-07-16  
-**상태**: Active (Single Source of Truth)
+**상태**: Active (Single Source of Truth)  
+**최종 갱신**: 2026-08-01 (PM 주체 Grok으로 반영)
 
 ---
 
@@ -42,13 +43,19 @@ BRAINPOOL의 데이터는 다음 흐름을 따르며, 각 단계는 `ctx`를 매
 | **클로3** | 코어널 | Life Knowledge Engine (삶의 기록, 씨앗 시스템) |
 | **클로4** | 코어헙 | 운영 관리 (키워드, 볼트, 점수 엔진) |
 | **클로5** | 코어링 | Language Knowledge Engine (번역 및 분석) |
-| **마누스 (PM)** | 관리 | 프로젝트 상태 분석, 아키텍처 린터, PM Guard 역할 |
+| **Grok (PM)** | 관리 | Context Guardian + Drift Detection + Knowledge Synchronization<br>프로젝트 상태 분석, 아키텍처 린터, PM Guard, 문서 동기화 |
+
+### PM 권한 제한 (Forbidden Actions)
+- Layer 생성 및 Core Responsibility 변경 금지
+- Source of Truth 및 Pipeline Contract 변경 금지
+- Master Prompt 직접 수정 금지
+- ADR 없는 구조 변경 금지
 
 ## 5. 의사결정 권한 (Decision Ownership)
 | 영역 | Decision Owner |
 | :--- | :--- |
-| Constitution / Core Responsibility | Architecture |
-| Business Priority | Planning |
+| Constitution / Core Responsibility | Architecture (클로1) |
+| Business Priority | Planning (Grok + Human) |
 | Repository Layout | Platform |
 | Automation Rules | Governance |
 | ADR Approval | Architecture + Planning |
