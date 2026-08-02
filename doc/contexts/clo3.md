@@ -1,6 +1,6 @@
 # Agent Context Contract — 클로3 (CoreNull)
 _작성: 클로3 / 기준일: 2026-07-25_
-_갱신: 2026-08-01 (View Scope · 씨드 비복제 · Known Gap 해소)_
+_갱신: 2026-08-02 (Seed 스위치 모델 v1.2 반영 — CoreNull_Seed_System.md 폐기에 따른 정합화)_
 _상태: Active_
 
 ---
@@ -40,13 +40,16 @@ CoreNull은 **외형(View)만** 제공한다. 기능은 다른 Core를 재사용
 2. 광장·마당·거실은 데이터 구조가 아니라 Scope View다.
 3. Scope 계층: 광장(넓음) → 마당 → 거실(좁음). 페이지 복제 아님.
 4. Identity → House → Room → Post. House = Identity의 공간적 표현.
-5. Seed/Fruit는 Room당 최대 1개. 참여자 수만큼 복제·포크 금지.
-6. 참여자 = 같은 Seed를 함께 키움. 소유권 = Seed Publisher = Room Creator.
-7. 열매는 항상 서재에 보관. 마당/거실/도서관은 진열 상태값만.
+5. Seed는 Room에 붙는 독립 스위치(seed_started_at/seed_target_date/has_participants/
+   harvested)다. "시작→진행→종료" 상태 머신이 아니다. 참여자 수만큼 복제·포크 금지.
+6. 참여자 = 같은 Room을 함께 씀. 스위치 조작 권한 = Room Creator(Owner) 한 명뿐.
+7. 열매는 harvested=true인 Room을 모은 View(서재)다. 마당/거실/도서관은 진열
+   상태값만 바뀔 뿐, Message는 이동·복사되지 않는다.
 8. 컴포넌트 재사용 우선. 차이 = 필터 + Scope.
+9. 진행률(%)이나 "개수"는 저장하지 않는다. 화면에서 그때그때 계산만 한다.
 ```
 
-상세: `doc/status/CORENULL_ROADMAP.md` §0.1 ~ §0.5
+상세: `doc/status/CORENULL_ROADMAP.md` §0.1 ~ §0.5, `CoreNull 핵심 원칙 v1.2 (Anchor)`
 
 ---
 
@@ -69,11 +72,16 @@ Vercel:    corenull.vercel.app (Hobby, API 라우트 12개 한도)
    One House per owner_key (1인 1집)
    Scope View: 광장 · 마당 · 거실 · 서재
 
-2. Seed System (Room 상태, 비복제)
-   Seed(0~1) → Growth(Posts) → Flower(완료 7일 전)
-   → Fruit(종료 다음날, 서재 보관)
-   Participants = 동일 Room/Seed 공유 · 공동 포스팅
-   Fruit Owner = Seed Publisher = Room Creator
+2. Seed 스위치 모델 (Room 상태, 비복제)
+   Room.seed_started_at / seed_target_date / has_participants / harvested
+     — 4개 독립 on/off 스위치, 서로 무관하게 켜고 끌 수 있음
+   목표형(seed_target_date 있음 → 진행률 자동계산 배지 🌱🌿🌸🍎)
+   성장형(seed_target_date null → "성장 🌿" 고정, 주인이 "종료" 버튼으로
+     seed_target_date=now 세팅해서 목표형 계산식에 값을 채워 넣는 것)
+   진행률/배지는 뷰에서 계산만, DB에 저장하지 않음
+   참여자(has_participants) = corenull_house_members.room_id 매핑 존재 여부로 계산되는
+     파생값 · 공동 포스팅 가능 · 스위치 자체는 조작 불가
+   harvested=true인 Room 모음 = 서재. Owner = Room Creator만 모든 스위치 조작 가능
 
 3. Derived Data (ADR-001)
    house_snapshots + derived_* 필드 필수
@@ -105,6 +113,11 @@ Vercel:    corenull.vercel.app (Hobby, API 라우트 12개 한도)
 ### CoreNull Roadmap (원칙 + Phase A)
 `brainpool-os/doc/status/CORENULL_ROADMAP.md`
 
+### CoreNull 핵심 원칙 v1.2 (Anchor)
+`brainpool-os/doc/directives/CoreNull_Core_Principles_v1.2.md` — Seed 스위치 모델의
+최상위 근거 문서. 이 문서와 충돌하는 서술이 있으면 이 문서가 이긴다.
+(구 `CoreNull_Seed_System.md`는 2026-08-02 폐기, 이 문서로 대체됨)
+
 ### ADR-001
 Derived Data Layer — house_snapshots 규칙
 
@@ -132,6 +145,7 @@ docs + CoreNull dev_contexts + Knowledge 일괄 주입.
 - Identity Platform 전체 Auth 설계
 - **Seed/Fruit/Room 참여자별 복제·포크**
 - **광장/마당/거실 전용 데이터 테이블 신설**
+- **진행률(%)·개수를 DB 컬럼으로 저장** (뷰에서 계산만 할 것)
 
 ---
 
@@ -149,6 +163,7 @@ docs + CoreNull dev_contexts + Knowledge 일괄 주입.
 ✅ house_snapshots ADR-001 준수
 ✅ 발견 UI는 자연스럽게, dismiss 가능
 ✅ 새 Primitive는 최후 수단 · 컴포넌트 재사용 우선
+✅ Seed는 스위치로 표현, 상태 머신 언어("시작/전환/종료/단계") 쓰지 않음
 
 ❌ 최종 결정 (Human First)
 ❌ 다른 Core 상태 변경
@@ -177,15 +192,15 @@ API 슬롯: 기존 라우트 action 통합 우선
 ```
 ✅ 해소 (2026-08-01)
 GET /api/hajun?action=context_package&agent=clo3
-  → Constitution + Agents + clo3 Contract + CORENULL_ROADMAP + Seed System
+  → Constitution + Agents + clo3 Contract + CORENULL_ROADMAP + CoreNull_Core_Principles_v1.2
   → dev_contexts project_id=aaaaaaaa-0000-0000-0000-000000000003
 
-단일 문서: /api/docs?file=clo3 | CORENULL_ROADMAP
+단일 문서: /api/docs?file=clo3 | CORENULL_ROADMAP | CoreNull_Core_Principles_v1.2
 에이전트 일괄: /api/docs?agent=clo3
 ```
 
 ---
 
-_검토: Grok (PM) — 2026-08-01 원칙 반영_
+_검토: Grok (PM) — 2026-08-01 원칙 반영, 2026-08-02 Seed 스위치 모델 갱신_
 _승인: 클로1 (총괄) — 대기_
 _이전: clo2.md (HajunAI)_
