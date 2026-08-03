@@ -1,18 +1,18 @@
 # Agent Context Contract — 클로3 (CoreNull)
-_작성: 클로3 / 기준일: 2026-07-25_
-_갱신: 2026-08-02 (Seed 스위치 모델 v1.2 반영 — CoreNull_Seed_System.md 폐기에 따른 정합화)_
+_작성: 클로3 / 기준일: 2026-07-25_  
+_갱신: 2026-08-02 (Seed 스위치 모델 v1.2 반영 — CoreNull_Seed_System.md 폐기에 따른 정합화)_  
 _상태: Active_
 
 ---
 
 ## 목적
 
-클로3는 BRAINPOOL OS의 Space Layer(View Layer)를 담당한다.
-Message를 사람이 살아가는 공간(집/방)으로 표현하고,
+클로3는 BRAINPOOL OS의 Space Layer(View Layer)를 담당한다.  
+Message를 사람이 살아가는 공간(집/방)으로 표현하고,  
 씨앗이 자라 열매가 되고 서재에 보관·진열되는 경험을 제공한다.
 
-이 문서는 클로3가 세션을 시작할 때
-무엇을 받아야 하는지, 왜 받는지,
+이 문서는 클로3가 세션을 시작할 때  
+무엇을 받아야 하는지, 왜 받는지,  
 무엇을 하면 안 되는지, 무엇을 반환하는지를 정의한다.
 
 ---
@@ -26,9 +26,9 @@ Message를 공간(House/Room)으로 표현하고
 경험하도록 돕는 역할
 ```
 
-CoreNull은 대화하지 않는다. (CoreChat)
-CoreNull은 번역/분석하지 않는다. (CoreRing)
-CoreNull은 판단하지 않는다. (CoreHub)
+CoreNull은 대화하지 않는다. (CoreChat)  
+CoreNull은 번역/분석하지 않는다. (CoreRing)  
+CoreNull은 판단하지 않는다. (CoreHub)  
 CoreNull은 **외형(View)만** 제공한다. 기능은 다른 Core를 재사용한다.
 
 ---
@@ -49,7 +49,8 @@ CoreNull은 **외형(View)만** 제공한다. 기능은 다른 Core를 재사용
 9. 진행률(%)이나 "개수"는 저장하지 않는다. 화면에서 그때그때 계산만 한다.
 ```
 
-상세: `doc/status/CORENULL_ROADMAP.md` §0.1 ~ §0.5, `CoreNull 핵심 원칙 v1.2 (Anchor)`
+상세: `doc/status/CORENULL_ROADMAP.md` §0.1 ~ §0.5,  
+`doc/directives/CoreNull_Core_Principles_v1.2.md` (Anchor)
 
 ---
 
@@ -114,8 +115,8 @@ Vercel:    corenull.vercel.app (Hobby, API 라우트 12개 한도)
 `brainpool-os/doc/status/CORENULL_ROADMAP.md`
 
 ### CoreNull 핵심 원칙 v1.2 (Anchor)
-`brainpool-os/doc/directives/CoreNull_Core_Principles_v1.2.md` — Seed 스위치 모델의
-최상위 근거 문서. 이 문서와 충돌하는 서술이 있으면 이 문서가 이긴다.
+`brainpool-os/doc/directives/CoreNull_Core_Principles_v1.2.md`  
+Seed 스위치 모델의 최상위 근거 문서. 이 문서와 충돌하는 서술이 있으면 이 문서가 이긴다.  
 (구 `CoreNull_Seed_System.md`는 2026-08-02 폐기, 이 문서로 대체됨)
 
 ### ADR-001
@@ -201,6 +202,6 @@ GET /api/hajun?action=context_package&agent=clo3
 
 ---
 
-_검토: Grok (PM) — 2026-08-01 원칙 반영, 2026-08-02 Seed 스위치 모델 갱신_
-_승인: 클로1 (총괄) — 대기_
+_검토: Grok (PM) — 2026-08-01 원칙 반영, 2026-08-02 Seed 스위치 모델 갱신_  
+_승인: 클로1 (총괄) — 승인_  
 _이전: clo2.md (HajunAI)_

@@ -1,9 +1,8 @@
 # BRAINPOOL OS Document Index
-_기준일: 2026-08-01_
+_기준일: 2026-08-02_
 _PM: Grok_
 
 이 문서는 `doc/` 아래 **현재 유효한 문서**의 지도이다.
-구버전·빈 파일·중복 파일은 2026-08-01 cleanup에서 제거했다.
 
 ## 계층 구조 (읽는 순서)
 
@@ -12,10 +11,11 @@ _PM: Grok_
 | **0** | `directives/Master_Prompt_v2.0.md` | Constitution (최상위 헌법) |
 | **1** | `directives/Identity_Platform_Architecture_v1.0.md` | Identity Platform |
 | **1** | `directives/Governance_Foundation_v1.0.md` | 운영 원칙 요약 |
+| **1** | `directives/CoreNull_Core_Principles_v1.2.md` | **CoreNull Anchor** (설계 최상위 기준) |
 | **2** | `directives/AI_Collaboration_Governance.md` | AI 협업 SOP |
 | **2** | `automation/WORKFLOW.md` | Commit-Centric 운영 모델 |
 | **3** | `directives/Agents_Directive.md` | 에이전트 역할·권한 |
-| **3** | `contexts/clo2.md` / `clo3.md` | 에이전트 Context Contract |
+| **3** | `contexts/clo2.md` / `clo3.md` / `pm.md` | 에이전트 Context Contract |
 | **4** | `adr/` | 개별 설계 결정 |
 | **Status** | `status/DEV_CONTEXT_SUMMARY.md` | 현재 진행 상태 |
 | **Status** | `status/CORENULL_ROADMAP.md` | CoreNull Phase A 실행 로드맵 |
@@ -24,11 +24,12 @@ _PM: Grok_
 
 ### directives/
 - `Master_Prompt_v2.0.md` — Constitution (Active)
+- `CoreNull_Core_Principles_v1.2.md` — **CoreNull Anchor** (Active, 2026-08-02)
 - `AI_Collaboration_Governance.md` — AI SOP
 - `Agents_Directive.md` — 역할·PM 권한 제한
 - `Agent_Repo_Mapping.md` — 레포·데이터 소유권
 - `Identity_Platform_Architecture_v1.0.md` — Identity
-- `CoreNull_Seed_System.md` — Seed/Fruit 세계관
+- `CoreNull_Seed_System.md` — **Deprecated** (→ CoreNull_Core_Principles_v1.2)
 - `BRAINPOOL_HajunAI_Manual.md` — HajunAI 사용 가이드
 - `Task_Identity_Connection_v1.0.md` — LinkCredential 작업지시 (이력)
 - `Governance_Foundation_v1.0.md` — Level 1 요약
@@ -36,7 +37,8 @@ _PM: Grok_
 
 ### contexts/
 - `clo2.md` — HajunAI (승인 완료)
-- `clo3.md` — CoreNull
+- `clo3.md` — CoreNull (스위치 모델 v1.2, 클로1 승인)
+- `pm.md` — Grok PM Context Contract
 
 ### automation/
 - `WORKFLOW.md` — Commit = 상태 변화 이벤트 운영 모델
@@ -49,12 +51,17 @@ _PM: Grok_
 
 ### status/
 - `DEV_CONTEXT_SUMMARY.md` — **가장 자주 보는 문서**
-- `CORENULL_ROADMAP.md` — CoreNull Phase A 실행 순서
+- `CORENULL_ROADMAP.md` — CoreNull Phase A (Anchor v1.2 정합)
 
 ### root of doc/
 - `Identity Platform Architecture — Decision Log.md` — Identity 결정 로그
 
-## 삭제된 문서 (2026-08-01)
+## 폐기·삭제
+
+### Deprecated (파일 유지, 인용 금지)
+- `directives/CoreNull_Seed_System.md` — 2026-08-02, Anchor v1.2로 대체
+
+### 삭제된 문서 (2026-08-01)
 - `API.md`, `영주-코어라이프 빌리지*`, `Identity Platform Architecture — Decision Log.nd`
 - `BRAINPOOL-OS-통합-마스터-문서.md`, `ARCHITECTURE.md`, `CHANGELOG.md`
 - `directives/Identity_Ownership_Architecture_v3.0.md`
