@@ -1,5 +1,5 @@
 # BRAINPOOL OS Document Index
-_기준일: 2026-08-02_
+_기준일: 2026-08-03_
 _PM: Grok_
 
 이 문서는 `doc/` 아래 **현재 유효한 문서**의 지도이다.
@@ -15,7 +15,7 @@ _PM: Grok_
 | **2** | `directives/AI_Collaboration_Governance.md` | AI 협업 SOP |
 | **2** | `automation/WORKFLOW.md` | Commit-Centric 운영 모델 |
 | **3** | `directives/Agents_Directive.md` | 에이전트 역할·권한 |
-| **3** | `contexts/clo2.md` / `clo3.md` / `pm.md` | 에이전트 Context Contract |
+| **3** | `contexts/clo2.md` / `clo3.md` / `clo4.md` / `pm.md` | 에이전트 Context Contract |
 | **4** | `adr/` | 개별 설계 결정 |
 | **Status** | `status/DEV_CONTEXT_SUMMARY.md` | 현재 진행 상태 |
 | **Status** | `status/CORENULL_ROADMAP.md` | CoreNull Phase A 실행 로드맵 |
@@ -37,7 +37,8 @@ _PM: Grok_
 
 ### contexts/
 - `clo2.md` — HajunAI (승인 완료)
-- `clo3.md` — CoreNull (스위치 모델 v1.2, 클로1 승인)
+- `clo3.md` — CoreNull 구현 (스위치 모델 v1.2, 클로1 승인)
+- `clo4.md` — CoreNull 디자인 & CoreHub 매핑 (Active, 2026-08-02)
 - `pm.md` — Grok PM Context Contract
 
 ### automation/
