@@ -1,5 +1,5 @@
 # BRAINPOOL OS Document Index
-_기준일: 2026-08-03_
+_기준일: 2026-08-06_
 _PM: Grok_
 
 이 문서는 `doc/` 아래 **현재 유효한 문서**의 지도이다.
@@ -13,9 +13,12 @@ _PM: Grok_
 | **1** | `directives/Governance_Foundation_v1.0.md` | 운영 원칙 요약 |
 | **1** | `directives/CoreNull_Core_Principles_v1.2.md` | **CoreNull Anchor** (설계 최상위 기준) |
 | **2** | `directives/AI_Collaboration_Governance.md` | AI 협업 SOP |
+| **2** | `directives/CoreNull_Mockup_Handoff_v1.0.md` | **클로3↔클로4 목업 매핑 공통 계약** |
 | **2** | `automation/WORKFLOW.md` | Commit-Centric 운영 모델 |
 | **3** | `directives/Agents_Directive.md` | 에이전트 역할·권한 |
 | **3** | `contexts/clo2.md` / `clo3.md` / `clo4.md` / `pm.md` | 에이전트 Context Contract |
+| **3** | `directives/WORK_ORDER_clo3_PhaseA.md` | 클로3 Phase A 작업 지시 |
+| **3** | `directives/WORK_ORDER_clo4_PhaseA.md` | 클로4 Phase A 작업 지시 |
 | **4** | `adr/` | 개별 설계 결정 |
 | **Status** | `status/DEV_CONTEXT_SUMMARY.md` | 현재 진행 상태 |
 | **Status** | `status/CORENULL_ROADMAP.md` | CoreNull Phase A 실행 로드맵 |
@@ -25,6 +28,9 @@ _PM: Grok_
 ### directives/
 - `Master_Prompt_v2.0.md` — Constitution (Active)
 - `CoreNull_Core_Principles_v1.2.md` — **CoreNull Anchor** (Active, 2026-08-02)
+- `CoreNull_Mockup_Handoff_v1.0.md` — 클로3/클로4 목업→소스 매핑 (Active, 2026-08-06)
+- `WORK_ORDER_clo3_PhaseA.md` — 클로3 구현 지시 (2026-08-06)
+- `WORK_ORDER_clo4_PhaseA.md` — 클로4 목업 지시 (2026-08-06)
 - `AI_Collaboration_Governance.md` — AI SOP
 - `Agents_Directive.md` — 역할·PM 권한 제한
 - `Agent_Repo_Mapping.md` — 레포·데이터 소유권
