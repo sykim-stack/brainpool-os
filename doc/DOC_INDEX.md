@@ -59,7 +59,8 @@ _PM: Grok_
 ### adr/
 - `ADR-ACCESS-001.md` — Access Policy
 - `ADR-NEIGHBOR-000.md` — Neighbor = 관계 (권한 아님), ACCESS-002 선행
-- `ADR-SEED-ADAPTER-000.md` — Seed Adapter 제거 **트리거 조건** (날짜 아님; 클로1 승인 후 마이그레이션)
+- `ADR-SEED-ADAPTER-000.md` — Seed Adapter 제거 트리거 조건
+- `ADR-RINGBLOCK-000.md` — RingBlock 표현 계약 (계산 분리 · CoreHub 보강)
 
 ### status/
 - `DEV_CONTEXT_SUMMARY.md`
