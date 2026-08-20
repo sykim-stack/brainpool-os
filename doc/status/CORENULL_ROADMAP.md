@@ -1,11 +1,14 @@
 # CoreNull 실행 로드맵
-_기준일: 2026-07-31 / 갱신: 2026-08-02 (Seed 스위치 모델 v1.2 Anchor 반영)_
+_기준일: 2026-07-31 / 갱신: 2026-08-20 (A-2 마당 명칭 정리 · Neighbor-000·UI Architecture 참조)_
 _수신: 클로3 (코어널)_
 _상태: Active — Phase A 실행 중_
 
 목적: 철학·설계 논의를 걷어내고, **지금 당장 실행 가능한 순서**만 정리.  
 설계 원칙의 최상위 근거는 `doc/directives/CoreNull_Core_Principles_v1.2.md` (Anchor)다.  
 이 로드맵과 Anchor가 충돌하면 **Anchor가 이긴다**.
+
+UI 기준 보완: `doc/directives/CoreNull_UI_Architecture_MasterView_Block_v1.0.md`  
+Neighbor 의미: `doc/adr/ADR-NEIGHBOR-000.md` (구현은 ADR-ACCESS-002)
 
 ---
 
@@ -27,7 +30,8 @@ _상태: Active — Phase A 실행 중_
 ### Rule A — 공간(데이터)을 만들지 않는다. View를 만든다.
 
 광장 / 마당 / 거실 / 서재 / 도서관은 **새 테이블·새 Primitive가 아니다.**  
-동일한 `House → Room → Message`를 **Scope·스위치·진열**만 바꿔 보여주는 View다.
+동일한 `House → Room → Message`를 **Scope·스위치·진열**만 바꿔 보여주는 View다.  
+House는 Domain이며 UI 객체가 아니다 (Master View + Block).
 
 ### Rule B — 복제·포크 금지
 
@@ -61,16 +65,14 @@ CoreNull은 View·Space·스위치·진열만 담당한다.
 ```
 Identity
   ↓
-House   = Identity의 공간적 표현 (1인 1집)
+House   = Identity의 공간적 표현 (1인 1집) · Domain (UI 객체 아님)
   ↓
 Room    = Message를 담는 최소한의 그릇 (owner_key, visibility + 스위치)
   ↓
 Message = 글·이미지·영상·댓글
 ```
 
-- House 정체성 표현 = **Hero** (배경 + 집주인 얼굴 + 집 소개)
-- 마당 Hero = 외부인이 보는 집 이미지
-- 거실 Hero = 내가 이웃에게 보여주는 이미지
+- 마당/거실의 Hero Block이 해당 owner(House Domain)의 인상을 표현한다
 - Hero 콘텐츠도 **Message 재사용**
 
 ---
@@ -78,16 +80,14 @@ Message = 글·이미지·영상·댓글
 ## 0.3 Scope 계층 (페이지 복제가 아님)
 
 ```
-광장 (넓은 탐험: 국가 → 도시 → 마을)
-  모든 사람 · 이야기 발견 · 관심으로 이웃 관계
-        ↓ Scope 좁아짐
-마당 (최종 목적지 · CoreNull 메인)
-  내 주소·문패 · 내 프로필 · 내 방 · 이웃 방
-  방문자가 "이런 이웃과 산다"를 보고 관계 맺음
-        ↓ Scope 좁아짐
-거실 (나만의 흐름)
-  내 방 목록 + 최근 글 · 이웃은 여기서 나를 관찰
-  공개방 입장 가능
+광장 (넓은 탐험)
+  public Room 발견 (발견 단위 = Room, House Card 없음)
+        ↓
+마당 (밖에서 본 집 · CoreNull 메인)
+  공개·관계 맥락의 Room 풍경 · 댓글 가능
+        ↓
+거실 (집 안에서 본 집)
+  내/이웃 공개 범위의 Room · 최근 글
         ↓
 방 (Room 상세 · 공동 포스팅 View)
 ```
@@ -137,9 +137,9 @@ Room.harvested          (boolean)           — 서재 노출 여부
 | Core | 역할 | 하지 않는 것 |
 | :--- | :--- | :--- |
 | **CoreNull** | 공간(View) · 스위치 | 추천/판단/우선순위/의미분석 안 함 |
-| **CoreHub** | 판단(Decision) | 공간 안 만듦. 현재 pause |
-| **HajunAI** | 사고(Mind) | 공간 안 만듦. 현재 v5 보류 |
-| **CoreRing** | 언어(Language) | Identity 자체 발급 안 함, CoreNull 걸 씀 |
+| **CoreHub** | 판단(Decision) · 연결 | 공간 안 만듦. 현재 pause |
+| **HajunAI** | 사고(Mind) · AI판 CoreNull 공간 | CoreNull UI 대체 안 함 |
+| **CoreRing** | 언어(Language) | Identity 자체 발급 안 함 |
 | **CoreChat** | 흐름(Flow) | 공간 안 만듦 |
 
 ---
@@ -150,6 +150,7 @@ Room.harvested          (boolean)           — 서재 노출 여부
 Identity → House → Room → Message
 스위치 4개 = Room 컬럼 (별도 테이블·객체 아님)
 Participants = 같은 Room을 쓰는 멤버 (복제 없음)
+Neighbor = House↔House 관계 (권한 아님) — ADR-NEIGHBOR-000
 ```
 
 **클로2(HajunAI)**: 구 `seed_mode` / 신 스위치 모두 **Room 값**으로 해석.  
@@ -161,13 +162,14 @@ Seed 엔티티·개수 복제 해석 금지. Knowledge Unit 생성 시 Anchor �
 
 ```
 Message + Room → View Scope (필터·스위치·배지) → Experience
+Master View + Block ON/OFF (새 Page 남발 금지)
 ```
 
 | Experience | 정의 | View Scope | Phase |
 | :--- | :--- | :--- | :--- |
 | **광장** | 넓은 탐험 · 발견 | visibility=public Room (+ 배지) | A |
-| **마당** | 집의 얼굴 · 나+이웃 | 이 House public + 이웃 방 | A(집주인) / B(이웃) |
-| **거실** | 나만의 흐름 | 내 House Room + 최근 글 | A |
+| **마당** | 밖에서 본 집 | public Room 풍경 · 댓글 | A(집주인) / B(이웃) |
+| **거실** | 안에서 본 집 | 내/허용 Room + 최근 글 | A |
 | **방** | 단건 상세 · 공동 포스팅 | 해당 Room | 기존 |
 | **서재** | harvested=true 모음 | 내 harvested Room | A (UI) |
 | **도서관** | 발행 진열 | 이후 |
@@ -182,19 +184,22 @@ Message + Room → View Scope (필터·스위치·배지) → Experience
 ### A-1. Room Card (공통)
 - Room 이름, 최근 활동 요약, 참여자 표시, 최근 활동 시각
 - seed 켜져 있으면 §0.4 배지(🌱🌿🌸🍎) 표시 (뷰 계산)
-- 클릭 → Room 또는 해당 House 마당
+- 클릭 → Room 또는 마당
 
 ### A-2. 광장
 - public Scope · Room Card 리스트
-- 카드 → 그 House **마당** (Room 직접 진입 아님)
+- 카드 → **마당** (Room 직접 진입 아님)
+  - 마당 = 밖에서 본 집 모습
+  - 나와 이웃 공개방의 최신 포스트
+- 개념·기능 변경 없음. '(집) House 마당' → '마당' 명칭만 정리.
 
 ### A-3. 거실
-- 내 House 전체 · 내 방 + 최근 글
+- 내 owner Context의 방 + 최근 글
 - 다른 사람 콘텐츠 끌어오지 않음
 
 ### A-4. 마당 — 집주인 파트
-- 이 House public Room 진열 (+ 배지)
-- 이웃 섹션은 자리만 비우거나 숨김 (Phase B)
+- public Room 진열 (+ 배지)
+- 이웃 섹션은 자리만 비우거나 숨김 (Phase B · ADR-NEIGHBOR-000 → ACCESS-002)
 
 ### A-5. 서재
 - harvested=true Room 모음 View · 복제 없음 · 쿼리만
@@ -203,11 +208,12 @@ Message + Room → View Scope (필터·스위치·배지) → Experience
 
 ## 4. Phase B — 대기
 
-1. 마당 이웃 섹션 — ADR-ACCESS-002 (`corenull_neighbors`)
-2. Presentation 재정렬 — CoreHub pause 해제 후
-3. 나이테(Hero Ring) — 클로4 컨셉 확정 후
-4. 도서관 발행 · 창고 커머스
-5. 스위치 4컬럼 마이그레이션 (Anchor §12 — 별도 작업지시)
+1. Neighbor 의미 고정 — **ADR-NEIGHBOR-000** (완료·의미 경계)
+2. 마당 이웃 섹션 · 스키마 — **ADR-ACCESS-002** (`corenull_neighbors`)
+3. Presentation 재정렬 — CoreHub pause 해제 후
+4. 나이테(Hero Ring) — 클로4 컨셉 확정 후
+5. 도서관 발행 · 창고 커머스
+6. 스위치 4컬럼 마이그레이션 (Anchor §12 — 별도 작업지시)
 
 ---
 
@@ -215,10 +221,11 @@ Message + Room → View Scope (필터·스위치·배지) → Experience
 
 - ADR-ACCESS-001 Phase 1 — 배포·검증 완료
 - LinkCredential (invite/recover) — 완료
-- House 1인1집 + 홈=Room목록 — 완료
+- House 1인1집 (Domain) — 완료
 - CoreRing SEO (ADR-SEO-001) — 완료 (CoreNull 무관)
 - context_package `agent=clo3` + CoreNull `dev_contexts` row — 2026-08-01 해소
 - CoreNull Anchor v1.2 + Seed_System 폐기 + clo3 정합화 — 2026-08-02
+- A-2 마당 명칭 정리 — 2026-08-20
 
 ---
 
@@ -241,6 +248,7 @@ Phase A 완료 후 Phase B 재검토.
 ### 클로2 (HajunAI)
 - 구 seed_mode / 신 스위치 = Room 값 · 엔티티·개수 복제 해석 금지
 - sync_snapshot은 House→Room→Message + 스위치 모델
+- AI판 CoreNull 철학: `HajunAI_AI_CoreNull_Philosophy_v1.0.md`
 
 ### 클로5 (CoreRing)
 - 번역/SEO는 Message·Room 단위 · Primitive 변경 없음
@@ -251,3 +259,4 @@ Phase A 완료 후 Phase B 재검토.
 - ❌ Seed/Fruit "개수"·상태 머신 언어
 - ❌ 진행률(%) DB 저장
 - ❌ 동일 리스트 UI를 Experience마다 새로 구현
+- ❌ House Card / House Page 등 House UI 객체
