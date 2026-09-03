@@ -1,5 +1,5 @@
 # BRAINPOOL OS Document Index
-_기준일: 2026-08-29_
+_기준일: 2026-09-03_
 _PM: Grok_
 
 이 문서는 `doc/` 아래 **현재 유효한 문서**의 지도이다.
@@ -49,6 +49,7 @@ _PM: Grok_
 ### adr/
 - `INDEX.md` — ADR 탐색 인덱스 (새 제안 전 필수 확인)
 - `ADR-ACCESS-001.md` — Access Policy (family = house_members.room_id)
+- `ADR-ACCESS-002.md` — Neighbor 성립·골목 범위 (요청→수락, Access 비연동)
 - `ADR-NEIGHBOR-000.md` — Neighbor = 관계 (권한 아님)
 - `ADR-CONFIRM-000.md` — adopted ≠ decision
 - `ADR-SEED-ADAPTER-000.md` — Adapter 제거 트리거
