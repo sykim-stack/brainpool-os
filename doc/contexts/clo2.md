@@ -1,5 +1,6 @@
 # Agent Context Contract — 클로2 (HajunAI)
 _작성: 클로2 / 기준일: 2026-07-20_
+_갱신: 2026-09-06 (context_package 폐기 → /api/docs?agent=clo2)_
 _상태: 클로1 승인 완료_
 
 ---
@@ -57,8 +58,8 @@ DB:        Supabase grlfocvlfatuvphkyivd
    contexts (Person Understanding) 갱신
 
 4. 개발 맥락 연속성 유지
-   dev_contexts 관리
-   context_package API 관리
+   /api/docs?agent=clo2 문서 패키지
+   (구 context_package API는 AI CoreNull 전환으로 폐기)
 
 5. hajuncore-app UI 관리
    dashboard / health / snapshots / chat 페이지
@@ -218,7 +219,8 @@ Output도 계약이다.
    Messages에서 파생된 Derived Data를 hajunai_conversations에 저장.
 
 ✅ Context를 조립한다.
-   dev_contexts + Knowledge Units + Opportunities를 하나의 맥락으로 연결.
+   방(해당 Room) 원본 메시지를 유한 창으로 읽는 것이 맥락이다.
+   구 context_package 일괄 주입은 폐기.
 
 ✅ 사람에게 제안을 제공한다.
    HajunAI 채팅을 통해 자연스럽게 발견을 전달.
@@ -269,13 +271,11 @@ Derived Data 생성 시:
 ## Context Package 조회
 
 ```
-GET https://hajuncore-app.vercel.app/api/hajun?action=context_package
-
-반환:
-- injection_prompt: 세션 시작용 통합 프롬프트
-- raw.constitution: Constitution 요약
-- raw.dev_ctx: dev_contexts 현황
-- raw.knowledge_count: Knowledge Unit 수
+✅ /api/docs?agent=clo2 로 이전 (2026-09-06)
+GET https://hajuncore-app.vercel.app/api/docs?agent=clo2
+  → Constitution + Agents + clo2 Contract 일괄 반환.
+(구 /api/hajun?action=context_package는 AI CoreNull 전환으로 폐기됨.
+ dev_contexts/Knowledge 자동 결합은 더 이상 지원하지 않음)
 ```
 
 ---

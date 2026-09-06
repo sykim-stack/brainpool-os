@@ -1,5 +1,6 @@
 # Agent Context Contract — PM (Grok)
 _작성: Grok (PM) / 기준일: 2026-08-02_
+_갱신: 2026-09-06 (context_package 폐기 → /api/docs?agent=pm)_
 _상태: Active — 클로1 사후 승인 반영 (Grok=PM 명칭)_
 
 ---
@@ -52,7 +53,7 @@ PM의 주 작업 공간은 **brainpool-os/doc/** 이다.
 ```
 1. Context Guardian
    세션·Commit·문서 간 맥락이 끊기지 않게 유지
-   context_package / dev_contexts / DOC_INDEX 정합성 점검
+   /api/docs?agent=pm / DOC_INDEX 정합성 점검
 
 2. Drift Detection
    문서 vs 구현, Constitution vs 실제 변경, 역할 경계 침범 감지
@@ -209,7 +210,7 @@ PM이 하면 안 되는 것들. (Master Prompt · Agents_Directive · PM_GUARD �
 ### 읽기 전용 분석
 ```
 허용: 모든 레포·문서·Commit History 읽기
-      context_package / dev_contexts 조회
+      /api/docs?agent=pm 조회
 ```
 
 ---
@@ -265,18 +266,10 @@ Master Prompt 수정 요청 시:
 ## Context Package 조회
 
 ```
-PM 전용 package가 아직 없다면:
-  - Master_Prompt_v2.0.md
-  - Agents_Directive.md
-  - PM_GUARD.md
-  - DOC_INDEX.md
-  - status/DEV_CONTEXT_SUMMARY.md
-  - 최근 Commit History
-를 세션 시작 시 직접 로드한다.
-
-향후:
-GET /api/hajun?action=context_package&agent=pm
-  지원 시 위 문서를 일괄 주입하도록 확장 가능.
+✅ /api/docs?agent=pm 로 이전 (2026-09-06)
+GET https://hajuncore-app.vercel.app/api/docs?agent=pm
+  → Master_Prompt + Agents + pm Contract + PM_GUARD + WORKFLOW + DOC_INDEX + DEV_CONTEXT_SUMMARY
+(구 /api/hajun?action=context_package는 AI CoreNull 전환으로 폐기됨)
 ```
 
 ---
@@ -295,6 +288,7 @@ GET /api/hajun?action=context_package&agent=pm
 ---
 
 _작성: Grok (PM) — 2026-08-02_
+_갱신: Grok (PM) — 2026-09-06 context_package → /api/docs_
 _승인: 클로1 (총괄) — 대기_
 _템플릿: clo2.md (Agent Context Contract)_
 _관련: Agents_Directive · PM_GUARD · Master_Prompt §4·§5_

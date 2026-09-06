@@ -1,6 +1,7 @@
 # Agent Context Contract — 클로3 (CoreNull)
 _작성: 클로3 / 기준일: 2026-07-25_  
 _갱신: 2026-08-02 (Seed 스위치 모델 v1.2 반영 — CoreNull_Seed_System.md 폐기에 따른 정합화)_  
+_갱신: 2026-09-06 (context_package 폐기 → /api/docs?agent=clo3)_  
 _상태: Active_
 
 ---
@@ -124,9 +125,10 @@ Derived Data Layer — house_snapshots 규칙
 
 ### Context Package (자동화)
 ```
-GET https://hajuncore-app.vercel.app/api/hajun?action=context_package&agent=clo3
+GET https://hajuncore-app.vercel.app/api/docs?agent=clo3
 ```
-docs + CoreNull dev_contexts + Knowledge 일괄 주입.
+Constitution + Agents + clo3 Contract + CORENULL_ROADMAP + CoreNull_Core_Principles_v1.2 일괄 반환.  
+(dev_contexts/Knowledge 자동 결합은 더 이상 지원하지 않음 - AI CoreNull 전환 이후 폐기)
 
 ---
 
@@ -191,17 +193,16 @@ API 슬롯: 기존 라우트 action 통합 우선
 ## Context Package 조회
 
 ```
-✅ 해소 (2026-08-01)
-GET /api/hajun?action=context_package&agent=clo3
+✅ /api/docs?agent=clo3 로 이전 (2026-09-06)
+GET /api/docs?agent=clo3
   → Constitution + Agents + clo3 Contract + CORENULL_ROADMAP + CoreNull_Core_Principles_v1.2
-  → dev_contexts project_id=aaaaaaaa-0000-0000-0000-000000000003
+(구 /api/hajun?action=context_package는 AI CoreNull 전환으로 폐기됨)
 
 단일 문서: /api/docs?file=clo3 | CORENULL_ROADMAP | CoreNull_Core_Principles_v1.2
-에이전트 일괄: /api/docs?agent=clo3
 ```
 
 ---
 
-_검토: Grok (PM) — 2026-08-01 원칙 반영, 2026-08-02 Seed 스위치 모델 갱신_  
+_검토: Grok (PM) — 2026-08-01 원칙 반영, 2026-08-02 Seed 스위치 모델 갱신, 2026-09-06 context_package → /api/docs_  
 _승인: 클로1 (총괄) — 승인_  
 _이전: clo2.md (HajunAI)_
