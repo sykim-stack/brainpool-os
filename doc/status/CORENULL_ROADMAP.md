@@ -223,7 +223,7 @@ Master View + Block ON/OFF (새 Page 남발 금지)
 - LinkCredential (invite/recover) — 완료
 - House 1인1집 (Domain) — 완료
 - CoreRing SEO (ADR-SEO-001) — 완료 (CoreNull 무관)
-- context_package `agent=clo3` + CoreNull `dev_contexts` row — 2026-08-01 해소
+- 에이전트 문서 명시적 조회 `/api/docs?agent=clo3` 전환 — 2026-09-06 해소; `dev_contexts`·Knowledge 자동 결합은 폐기
 - CoreNull Anchor v1.2 + Seed_System 폐기 + clo3 정합화 — 2026-08-02
 - A-2 마당 명칭 정리 — 2026-08-20
 

@@ -123,12 +123,12 @@ Seed 스위치 모델의 최상위 근거 문서. 이 문서와 충돌하는 서
 ### ADR-001
 Derived Data Layer — house_snapshots 규칙
 
-### Context Package (자동화)
+### 명시적 에이전트 문서 조회
 ```
 GET https://hajuncore-app.vercel.app/api/docs?agent=clo3
 ```
-Constitution + Agents + clo3 Contract + CORENULL_ROADMAP + CoreNull_Core_Principles_v1.2 일괄 반환.  
-(dev_contexts/Knowledge 자동 결합은 더 이상 지원하지 않음 - AI CoreNull 전환 이후 폐기)
+Constitution + Agents + clo3 Contract + CORENULL_ROADMAP + CoreNull_Core_Principles_v1.2를 명시적으로 반환한다.
+dev_contexts·Knowledge 자동 결합은 지원하지 않는다.
 
 ---
 
@@ -190,13 +190,13 @@ API 슬롯: 기존 라우트 action 통합 우선
 
 ---
 
-## Context Package 조회
+## 에이전트 문서 조회
 
 ```
-✅ /api/docs?agent=clo3 로 이전 (2026-09-06)
+✅ `/api/docs?agent=clo3`를 사용한다 (2026-09-06)
 GET /api/docs?agent=clo3
   → Constitution + Agents + clo3 Contract + CORENULL_ROADMAP + CoreNull_Core_Principles_v1.2
-(구 /api/hajun?action=context_package는 AI CoreNull 전환으로 폐기됨)
+구 `/api/hajun?action=context_package`는 폐기되었으며 문서 조회 경로로 사용하지 않는다.
 
 단일 문서: /api/docs?file=clo3 | CORENULL_ROADMAP | CoreNull_Core_Principles_v1.2
 ```
