@@ -1,5 +1,5 @@
 # BRAINPOOL OS Document Index
-_기준일: 2026-09-03_
+_기준일: 2026-09-13_
 _PM: Grok_
 
 이 문서는 `doc/` 아래 **현재 유효한 문서**의 지도이다.
@@ -23,7 +23,7 @@ _PM: Grok_
 | **3** | `contexts/clo2.md` ~ `pm.md` | Context Contract |
 | **3** | `directives/WORK_ORDER_clo3_PhaseA.md` / `WORK_ORDER_clo4_PhaseA.md` | Phase A 지시 |
 | **4** | `adr/` | 개별 설계 결정 |
-| **Status** | `status/DEV_CONTEXT_SUMMARY.md` / `CORENULL_ROADMAP.md` | 진행 상태 |
+| **Status** | `status/DEV_CONTEXT_SUMMARY.md` / `CORENULL_ROADMAP.md` / `CONTEXT_LOOP_2026-09-13.md` | 진행 상태 |
 
 ## 폴더별 유효 문서
 
@@ -52,11 +52,13 @@ _PM: Grok_
 - `ADR-ACCESS-002.md` — Neighbor 성립·골목 범위 (요청→수락, Access 비연동)
 - `ADR-NEIGHBOR-000.md` — Neighbor = 관계 (권한 아님)
 - `ADR-CONFIRM-000.md` — adopted ≠ decision
+- `ADR-CONTEXT-000.md` — **contexts 소유권: 원본=Core, 이해=HajunAI** (2026-09-13)
 - `ADR-SEED-ADAPTER-000.md` — Adapter 제거 트리거
 - `ADR-RINGBLOCK-000.md` — RingBlock 표현 계약
 
 ### status/
 - `DEV_CONTEXT_SUMMARY.md` / `CORENULL_ROADMAP.md`
+- `CONTEXT_LOOP_2026-09-13.md` — **맥락 본선 마무리 상태** (synthesize→chat 검증)
 
 ### root of doc/
 - `Identity Platform Architecture — Decision Log.md`
