@@ -1,6 +1,6 @@
 # ADR Index
 
-_최종 갱신: 2026-09-13_  
+_최종 갱신: 2026-09-14_  
 _용도: 탐색 전용. 결정을 재서술하지 않는다._
 
 새 관계·구조·기능을 제안하거나 “지금 스키마에 없다”고 판단하기 전에  
@@ -13,6 +13,7 @@ _용도: 탐색 전용. 결정을 재서술하지 않는다._
 | NEIGHBOR-000 | [ADR-NEIGHBOR-000.md](./ADR-NEIGHBOR-000.md) | Neighbor = House↔House 관계. 권한이 아님. Access와 비종속 | Active | CoreNull, CoreHub |
 | CONFIRM-000 | [ADR-CONFIRM-000.md](./ADR-CONFIRM-000.md) | adopted ≠ decision. AI 채택과 사람 확정을 분리. prior_decisions는 사람 확정만 | Active | HajunAI |
 | CONTEXT-000 | [ADR-CONTEXT-000.md](./ADR-CONTEXT-000.md) | 원본=Core, 이해=HajunAI. contexts=현재 이해 상태 | Active | HajunAI |
+| HAJUNAI-CHILD-000 | [ADR-HAJUNAI-CHILD-000.md](./ADR-HAJUNAI-CHILD-000.md) | 챗봇 아님. 마당 원본을 이해하고 대화로 자람. chat=현관 | Active | HajunAI |
 | SEED-ADAPTER-000 | [ADR-SEED-ADAPTER-000.md](./ADR-SEED-ADAPTER-000.md) | Seed Adapter 제거는 날짜가 아니라 실제 주체 요구(트리거)가 생길 때 | Draft | CoreNull |
 | RINGBLOCK-000 | [ADR-RINGBLOCK-000.md](./ADR-RINGBLOCK-000.md) | RingBlock 표현 계약(props)과 데이터 계산 로직 분리 | Draft | CoreNull, CoreHub |
 
