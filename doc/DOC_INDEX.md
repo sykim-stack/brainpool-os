@@ -1,5 +1,5 @@
 # BRAINPOOL OS Document Index
-_기준일: 2026-09-14_
+_기준일: 2026-09-19_
 _PM: Grok_
 
 이 문서는 `doc/` 아래 **현재 유효한 문서**의 지도이다.
@@ -61,6 +61,7 @@ _PM: Grok_
 - `DEV_CONTEXT_SUMMARY.md` / `CORENULL_ROADMAP.md`
 - `CONTEXT_LOOP_2026-09-13.md` — 맥락 본선 검증
 - `HAJUNAI_CHILD_DESIGN_2026-09-14.md` — 아이 설계 세션 요약
+- `CORERING_STABILIZATION_2026-09-18.md` — **CoreRing 안정화 · HajunAI 연결 보류 의미 정정** (분석→HajunAI만 ⏸️ / 하준챗·방·ADR-CONTEXT-000 🟢)
 
 ### root of doc/
 - `Identity Platform Architecture — Decision Log.md`
