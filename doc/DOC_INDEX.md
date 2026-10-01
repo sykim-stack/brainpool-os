@@ -1,5 +1,5 @@
 # BRAINPOOL OS Document Index
-_기준일: 2026-09-29_
+_기준일: 2026-10-02_
 _PM: Grok_
 
 이 문서는 `doc/` 아래 **현재 유효한 문서**의 지도이다.
@@ -25,6 +25,7 @@ _PM: Grok_
 | **4** | `adr/` | 개별 설계 결정 |
 | **Status** | `status/` | 진행 상태 |
 | **Baseline** | `status/BRAINPOOL_INTEGRATED_STRUCTURE_INVESTIGATION_v2_2026-09-28.md` | **통합 구조·조사 기준 기록 v2** |
+| **History** | `status/BRAINPOOL_CLEAN_LEGACY_CODE_HISTORY_2026-10-02.md` | **brainpool-clean 레거시 코드 진화 역사** |
 
 ## 폴더별 유효 문서
 
@@ -64,6 +65,7 @@ _PM: Grok_
 - `HAJUNAI_CHILD_DESIGN_2026-09-14.md` — 아이 설계 세션 요약
 - `CORERING_STABILIZATION_2026-09-18.md` — **CoreRing 안정화 · HajunAI 연결 보류 의미 정정** (분석→HajunAI만 ⏸️ / 하준챗·방·ADR-CONTEXT-000 🟢)
 - `BRAINPOOL_INTEGRATED_STRUCTURE_INVESTIGATION_v2_2026-09-28.md` — **통합 구조·조사 기록 v2 (기준일 2026-09-28)** · 확정/강한근거/미확인 분리 · 설계 확정서 아님
+- `BRAINPOOL_CLEAN_LEGACY_CODE_HISTORY_2026-10-02.md` — **brainpool-clean 레거시 코드 진화 역사** · 삭제하지 않음 · 에러도 메시지로 취급
 
 ### root of doc/
 - `Identity Platform Architecture — Decision Log.md`
