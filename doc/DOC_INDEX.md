@@ -1,5 +1,5 @@
 # BRAINPOOL OS Document Index
-_기준일: 2026-10-02_
+_기준일: 2026-10-08_
 _PM: Grok_
 
 이 문서는 `doc/` 아래 **현재 유효한 문서**의 지도이다.
@@ -56,6 +56,7 @@ _PM: Grok_
 - `ADR-CONFIRM-000.md` — adopted ≠ decision
 - `ADR-CONTEXT-000.md` — contexts 소유권 (원본=Core, 이해=HajunAI)
 - `ADR-HAJUNAI-CHILD-000.md` — **챗봇 아님. 정체성·대화성장·마당↔chat** (2026-09-14)
+- `ADR-HERMES-000.md` — **Phase 0 Action Unit 경계. 판단·5후보 제안만. 실행 금지** (2026-10-08)
 - `ADR-SEED-ADAPTER-000.md` — Adapter 제거 트리거
 - `ADR-RINGBLOCK-000.md` — RingBlock 표현 계약
 
