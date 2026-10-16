@@ -57,6 +57,7 @@ _PM: Grok_
 - `ADR-CONTEXT-000.md` — contexts 소유권 (원본=Core, 이해=HajunAI)
 - `ADR-HAJUNAI-CHILD-000.md` — **챗봇 아님. 정체성·대화성장·마당↔chat** (2026-09-14)
 - `ADR-HERMES-000.md` — **Phase 0 Action Unit 경계. 판단·5후보 제안만. 실행 금지** (2026-10-08)
+- `ADR-IDENTITY-OWNERSHIP-001.md` — **Auth UID 검증 주체와 owner_key Primitive의 명시적 House ownership 연결 제안** (Proposed, 2026-10-16)
 - `ADR-SEED-ADAPTER-000.md` — Adapter 제거 트리거
 - `ADR-RINGBLOCK-000.md` — RingBlock 표현 계약
 

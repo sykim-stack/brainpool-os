@@ -1,13 +1,14 @@
 # ADR Index
 
-_최종 갱신: 2026-10-08_  
+_최종 갱신: 2026-10-08_
 _용도: 탐색 전용. 결정을 재서술하지 않는다._
 
-새 관계·구조·기능을 제안하거나 “지금 스키마에 없다”고 판단하기 전에  
+새 관계·구조·기능을 제안하거나 “지금 스키마에 없다”고 판단하기 전에
 이 목록을 먼저 확인한다. 상세는 각 ADR 파일을 연다.
 
 | ID | 파일 | 핵심 한 줄 | 상태 | 관련 Core |
 |----|------|------------|------|-----------|
+| IDENTITY-OWNERSHIP-001 | [ADR-IDENTITY-OWNERSHIP-001.md](./ADR-IDENTITY-OWNERSHIP-001.md) | Auth UID는 검증 주체, owner_key는 보존 Primitive. House ownership link는 nullable·명시적 연결 | Proposed | Identity Platform, CoreNull, CoreHub |
 | ACCESS-001 | [ADR-ACCESS-001.md](./ADR-ACCESS-001.md) | Room Visibility와 Access Policy 분리. family는 `corenull_house_members.room_id` 재사용. 새 participants 테이블 기각 | Active | CoreNull |
 | ACCESS-002 | [ADR-ACCESS-002.md](./ADR-ACCESS-002.md) | Neighbor 성립=요청→수락. 골목=목록+입구(피드 제외). Access와 비연동 | Active | CoreNull, CoreHub |
 | NEIGHBOR-000 | [ADR-NEIGHBOR-000.md](./ADR-NEIGHBOR-000.md) | Neighbor = House↔House 관계. 권한이 아님. Access와 비종속 | Active | CoreNull, CoreHub |
