@@ -35,19 +35,19 @@ Supabase Auth UID는 **요청자를 검증하는 보안 주체**로 사용하고
 
 ## 제안 계약
 
-canonical House table은 CoreNull의 기존 `public.corenull_houses`를 유지한다.
+실제 연결 project에서 확인된 canonical House table은 기존 `corenull.houses`다.
 
 ```text
-public.corenull_houses.id
-public.corenull_houses.owner_key   -- 기존 Identity Primitive, 보존
-public.corenull_houses.owner_id    -- verified auth.users.id, nullable link
+corenull.houses.id
+corenull.houses.owner_key   -- 기존 Identity Primitive, 보존
+corenull.houses.owner_id    -- verified auth.users.id, nullable link
 ```
 
 - `owner_id IS NULL`: legacy/unlinked House
 - `owner_id IS NOT NULL`: verified Auth UID와 연결된 House
 - 한 `owner_id`가 여러 House를 소유하는지 여부는 `owner_key` 1인 1집 규칙과 별도로 검증한다. migration에서 임의 unique constraint를 추가하지 않는다.
 - CoreHub는 client body의 `owner_id`/`owner_key`를 신뢰하지 않고 token에서 검증된 Auth UID를 사용한다.
-- CoreHub의 House ownership query는 실제 canonical table/schema에 맞춰 정렬해야 한다. 현재 `corenull.houses` 참조는 자동으로 유효하다고 간주하지 않는다.
+- CoreHub의 House ownership query는 실제 canonical `corenull.houses` table을 조회한다.
 
 ## 신규 사용자 흐름
 
@@ -66,7 +66,7 @@ public.corenull_houses.owner_id    -- verified auth.users.id, nullable link
 2. 서버가 provider subject, Auth UID, 기존 identity mapping을 확인한다.
 3. mapping이 명확하고 사용자가 명시적으로 연결을 요청한 경우에만 `owner_id`를 기록한다.
 4. 충돌하거나 증거가 부족하면 `IDENTITY_CONFLICT` 또는 `unlinked` 상태로 남긴다.
-5. `owner_id IS NULL` House는 CoreHub Fact 전송 대상에서 제외하거나 quarantine한다.
+5. `corenull.houses.owner_id IS NULL` House는 CoreHub Fact 전송 대상에서 제외하거나 quarantine한다.
 6. 기존 `owner_key`와 House 데이터는 연결 실패 시에도 삭제·변경하지 않는다.
 
 ## 금지 사항
@@ -106,4 +106,4 @@ public.corenull_houses.owner_id    -- verified auth.users.id, nullable link
 
 ## 상태
 
-**Proposed.** 이 ADR은 현재 코드와 schema의 불일치를 기록하고 정렬안을 제안하지만, Auth UID mapping, canonical table, 운영 migration, worker 인증을 승인하지 않는다.
+**Proposed.** 이 ADR은 현재 identity mapping gap을 기록하고 정렬안을 제안하지만, Auth UID mapping, 운영 migration, worker 인증을 승인하지 않는다. 실제 연결 project의 `corenull.houses.owner_id` 존재 확인은 House-column 추가 migration을 대체하며, staging에서는 기존 `public.corenull_owner_identities`에 Auth UID 연결 컬럼만 확장한다.
