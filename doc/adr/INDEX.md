@@ -16,6 +16,7 @@ _용도: 탐색 전용. 결정을 재서술하지 않는다._
 | CONTEXT-000 | [ADR-CONTEXT-000.md](./ADR-CONTEXT-000.md) | 원본=Core, 이해=HajunAI. contexts=현재 이해 상태 | Active | HajunAI |
 | HAJUNAI-CHILD-000 | [ADR-HAJUNAI-CHILD-000.md](./ADR-HAJUNAI-CHILD-000.md) | 챗봇 아님. 마당 원본을 이해하고 대화로 자람. chat=현관 | Active | HajunAI |
 | HERMES-000 | [ADR-HERMES-000.md](./ADR-HERMES-000.md) | Phase 0: Action Unit 판단·5후보 제안만. 실행 금지. 보류는 정상 | Active | HajunAI |
+| PROPOSAL-001 | [ADR-PROPOSAL-001.md](./ADR-PROPOSAL-001.md) | 원본과 분리된 공통 제안·승인·적용 이력 공간. AI 직접 반영 금지 | Proposed | CoreHub, HajunAI, CoreRing |
 | SEED-ADAPTER-000 | [ADR-SEED-ADAPTER-000.md](./ADR-SEED-ADAPTER-000.md) | Seed Adapter 제거는 날짜가 아니라 실제 주체 요구(트리거)가 생길 때 | Draft | CoreNull |
 | RINGBLOCK-000 | [ADR-RINGBLOCK-000.md](./ADR-RINGBLOCK-000.md) | RingBlock 표현 계약(props)과 데이터 계산 로직 분리 | Draft | CoreNull, CoreHub |
 
