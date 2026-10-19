@@ -13,6 +13,8 @@ BRAINPOOL는 Core가 소유한 원본과 AI·Core가 생성한 제안을 분리�
 - 사람의 승인 후에도 제안은 자동 복사가 아니라 대상 Core의 검증된 adapter를 통해서만 적용한다.
 - 승인된 **신규 정식 등록**과 기존 원본의 **변경 요청**을 서로 다른 proposal type으로 구분한다.
 - 원본 Message와 기존 Core 데이터는 덮어쓰지 않는다. 수정·삭제가 필요하면 별도 change/delete proposal로 다룬다.
+- `proposal_type`은 처리 의도이고, domain은 revision `payload.domain`으로 분리한다. `learning_item`, `meaning_view`, `link`는 전역 proposal type이 아니다.
+- payload는 typed proposal 내용만 담으며 status, approval, target table/column, SQL, credential을 담지 않는다.
 
 이 문서는 구조 제안이며, Proposal DB 생성·삭제, migration, 기존 원본 DB 변경을 승인하지 않는다.
 
@@ -64,7 +66,7 @@ Proposal DB의 데이터는 **제안 상태**다. Proposal DB에 저장됐다는
 
 기존 원본에 존재하지 않는 새 정식 record의 등록을 제안한다.
 
-예: 새 학습 항목, 새 의미 후보, 새 연결 유형, 새 Knowledge Unit 후보.
+예: 새 학습 항목, 새 의미 후보, 새 연결 유형, 새 Knowledge Unit 후보. `learning_item`은 `payload.domain`의 예시이지 전역 `proposal_type`이 아니다.
 
 승인 후에는 대상 Core adapter가 schema와 소유권을 검증하고 새 record를 생성한다. 기존 Message는 수정하지 않는다.
 
@@ -90,6 +92,15 @@ Proposal DB의 데이터는 **제안 상태**다. Proposal DB에 저장됐다는
 해석, 연결, 추천, 다음 행동 후보를 기록한다. 이 유형은 승인 전까지 원본 변경을 일으키지 않는다.
 
 Hermes의 Phase 0 행동 후보와 AI가 채택한 응답은 자동으로 `decision` 또는 `new_record`가 되지 않는다.
+
+### 4.5 Legacy 용어 정렬
+
+- `learning_item`, `create_record` → `new_record` + `payload.domain = learning_item`
+- `update_record` → `change_request`
+- `meaning_view` → `interpretation`의 domain 후보
+- `link` → 해석·관계 제안이면 `interpretation`, 정식 link record 등록이면 `new_record` + `domain = link`
+
+구현에서는 위 다섯 `proposal_type`만 enum 또는 CHECK constraint로 허용하고, 미등록 type/domain 조합은 fail closed로 거부한다. 이 매핑은 target registry나 adapter를 승인하는 것이 아니다.
 
 ## 5. 논리 모델
 
@@ -136,6 +147,20 @@ created_at
 
 제출 후 내용을 수정하지 않는다. 수정이 필요하면 새 revision을 만든다. 승인 결정은 반드시 특정 revision을 가리킨다.
 
+최초 payload의 논리 형식은 다음과 같다.
+
+```json
+{
+  "payload_schema_version": 1,
+  "domain": "<semantic-domain>",
+  "data": {}
+}
+```
+
+`payload_schema_version`은 payload 구조 버전이며 Proposal lifecycle이나 대상 Core schema의 버전이 아니다. `domain`은 의미 분류이고 `data`는 승인된 domain schema에 따른 typed proposal 내용이다. payload에는 status, approval decision, actor 권한, target table/column, SQL, secret, arbitrary command를 넣지 않는다.
+
+`new_record`는 producer가 아직 생성되지 않은 정식 target record ID를 지정하지 않는다. `change_request`와 `delete_request`는 target metadata와 일치하는 `expected_target`을 요구하며, record ID와 version 또는 fingerprint 중 적어도 하나를 포함해야 한다.
+
 ### 5.3 Evidence
 
 제안의 근거와 원본 연결을 보존한다.
@@ -170,7 +195,7 @@ decision_reason
 created_at
 ```
 
-`adopted`, AI score, AI reviewer 선택 결과는 사람의 `approved`를 대체하지 않는다. `approved_with_changes`인 경우 변경 내용은 새 revision으로 남기고 그 revision을 다시 승인 대상으로 삼는다.
+`adopted`, AI score, AI reviewer 선택 결과는 사람의 `approved`를 대체하지 않는다. `approved_with_changes`는 현재 revision에 대한 적용 승인이 아니다. 해당 Decision은 `needs_revision` 결과로 남기고, producer 또는 권한 있는 편집 주체가 새 revision을 만든 뒤 그 revision에 대해 사람이 다시 `approved` Decision을 기록해야 한다. 기존 revision payload나 기존 Decision을 재해석해 적용하지 않는다.
 
 ### 5.5 Application Run
 
@@ -204,9 +229,7 @@ draft
 submitted
   ├─ needs_revision → revised revision → submitted
   ├─ rejected       → terminal
-  └─ approved / approved_with_changes
-                         ↓
-                      applying
+  └─ approved       → applying
                          ├─ conflict → conflict
                          ├─ failed   → failed / 재검토
                          └─ applied  → terminal success
@@ -215,7 +238,7 @@ submitted
 규칙:
 
 - AI와 producer는 `draft`, `submitted`, `needs_revision`까지만 만들 수 있다.
-- 사람 승인자만 `approved`, `approved_with_changes`, `rejected`를 기록할 수 있다.
+- 사람 승인자만 `approved`, `approved_with_changes`, `rejected`를 기록할 수 있다. 단, `approved_with_changes`는 lifecycle상 `needs_revision`으로 projection하며 `applying`으로 전이할 수 없다.
 - Apply worker는 승인된 revision만 `applying`으로 전환할 수 있다.
 - Worker가 `applied`를 임의로 선언하지 않는다. 대상 adapter의 성공 응답과 application run을 함께 남긴다.
 - terminal 상태의 proposal은 같은 idempotency key로 중복 생성하지 않는다.
@@ -299,7 +322,27 @@ adapter는 다음을 보장해야 한다.
 - 성공·실패·충돌을 명시적으로 반환
 - retry 시 중복 반영 방지
 
+Producer가 제출한 `target_schema`, `target_table`, adapter 이름은 요청 또는 희망 target일 뿐 권위 있는 적용 대상이 아니다. Proposal service는 actor 권한과 승인된 target registry를 확인해 canonical target metadata를 확정한다. registry에 없는 target 또는 허용되지 않은 type/domain/target 조합은 거부한다. registry와 adapter 목록이 확정·배포되기 전에는 특정 물리 table에 적용할 수 없다.
+
 Proposal DB가 모든 Core의 공통 원본이 되도록 adapter를 우회하는 양방향 동기화는 만들지 않는다.
+
+### 11.1 변경·삭제 전제조건
+
+`change_request`와 `delete_request`의 `payload.data.expected_target`은 Proposal의 `target_record_id`와 같은 record를 가리켜야 한다.
+
+```json
+{
+  "record_id": "<same-as-target_record_id>",
+  "version": "<optional-target-version>",
+  "fingerprint": "<optional-algorithm-version-and-digest>"
+}
+```
+
+- `record_id` 누락 또는 target metadata와 불일치는 제출 검증에서 거부한다.
+- `version`과 `fingerprint` 중 적어도 하나는 필요하다.
+- 둘 다 있으면 AND 조건으로 모두 일치해야 한다. 하나가 맞아도 다른 값을 무시하지 않는다.
+- version/fingerprint의 의미·정규화·알고리즘 버전은 target별 계약으로 확정한다. 해당 규격이 없으면 적용하지 않는다.
+- 비교와 변경 사이에 대상이 바뀌었거나 원자적 보장이 없으면 원본에 쓰지 않고 `conflict`로 종료한다.
 
 ## 12. 범위와 비범위
 
@@ -337,6 +380,8 @@ Proposal DB가 모든 Core의 공통 원본이 되도록 adapter를 우회하는
 8. 신규 등록과 기존 변경 요청이 서로 다른 adapter 경로를 사용한다.
 9. 모든 approval/application run에 actor, revision, timestamp, result가 남는다.
 10. Message 원문과 기존 Core 원본은 proposal 생성·승인만으로 변경되지 않는다.
+11. `approved_with_changes`는 `applying`으로 전이하지 않고 새 revision과 새 `approved` Decision을 요구한다.
+12. `change_request`/`delete_request`의 expected target이 현재 version 또는 fingerprint와 불일치하면 원본을 변경하지 않고 conflict로 남긴다.
 
 ## 14. 상태와 다음 결정
 
