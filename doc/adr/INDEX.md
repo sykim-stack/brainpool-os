@@ -1,13 +1,14 @@
 # ADR Index
 
-_최종 갱신: 2026-10-08_  
+_최종 갱신: 2026-10-08_
 _용도: 탐색 전용. 결정을 재서술하지 않는다._
 
-새 관계·구조·기능을 제안하거나 “지금 스키마에 없다”고 판단하기 전에  
+새 관계·구조·기능을 제안하거나 “지금 스키마에 없다”고 판단하기 전에
 이 목록을 먼저 확인한다. 상세는 각 ADR 파일을 연다.
 
 | ID | 파일 | 핵심 한 줄 | 상태 | 관련 Core |
 |----|------|------------|------|-----------|
+| IDENTITY-OWNERSHIP-001 | [ADR-IDENTITY-OWNERSHIP-001.md](./ADR-IDENTITY-OWNERSHIP-001.md) | Auth UID는 검증 주체, owner_key는 보존 Primitive. House ownership link는 nullable·명시적 연결 | Proposed | Identity Platform, CoreNull, CoreHub |
 | ACCESS-001 | [ADR-ACCESS-001.md](./ADR-ACCESS-001.md) | Room Visibility와 Access Policy 분리. family는 `corenull_house_members.room_id` 재사용. 새 participants 테이블 기각 | Active | CoreNull |
 | ACCESS-002 | [ADR-ACCESS-002.md](./ADR-ACCESS-002.md) | Neighbor 성립=요청→수락. 골목=목록+입구(피드 제외). Access와 비연동 | Active | CoreNull, CoreHub |
 | NEIGHBOR-000 | [ADR-NEIGHBOR-000.md](./ADR-NEIGHBOR-000.md) | Neighbor = House↔House 관계. 권한이 아님. Access와 비종속 | Active | CoreNull, CoreHub |
@@ -15,6 +16,7 @@ _용도: 탐색 전용. 결정을 재서술하지 않는다._
 | CONTEXT-000 | [ADR-CONTEXT-000.md](./ADR-CONTEXT-000.md) | 원본=Core, 이해=HajunAI. contexts=현재 이해 상태 | Active | HajunAI |
 | HAJUNAI-CHILD-000 | [ADR-HAJUNAI-CHILD-000.md](./ADR-HAJUNAI-CHILD-000.md) | 챗봇 아님. 마당 원본을 이해하고 대화로 자람. chat=현관 | Active | HajunAI |
 | HERMES-000 | [ADR-HERMES-000.md](./ADR-HERMES-000.md) | Phase 0: Action Unit 판단·5후보 제안만. 실행 금지. 보류는 정상 | Active | HajunAI |
+| PROPOSAL-001 | [ADR-PROPOSAL-001.md](./ADR-PROPOSAL-001.md) | 원본과 분리된 공통 제안·승인·적용 이력 공간. AI 직접 반영 금지 | Proposed | CoreHub, HajunAI, CoreRing |
 | SEED-ADAPTER-000 | [ADR-SEED-ADAPTER-000.md](./ADR-SEED-ADAPTER-000.md) | Seed Adapter 제거는 날짜가 아니라 실제 주체 요구(트리거)가 생길 때 | Draft | CoreNull |
 | RINGBLOCK-000 | [ADR-RINGBLOCK-000.md](./ADR-RINGBLOCK-000.md) | RingBlock 표현 계약(props)과 데이터 계산 로직 분리 | Draft | CoreNull, CoreHub |
 
