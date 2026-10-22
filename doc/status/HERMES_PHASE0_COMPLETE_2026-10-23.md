@@ -44,7 +44,7 @@ _범위: HajunAI chat · Action Unit 판단·제안 (실행 금지)_
 
 ## 브랜치
 
-- Hermes 진실 공급원 = **`hajuncore-app` `main`** (default)  
+- Hermes 진실 공급원 = **`hajuncore-app` `main`** (default)
 - `master` 는 별 계열 — Hermes 역이식 하지 않음
 
 ## 문서
@@ -57,4 +57,8 @@ _범위: HajunAI chat · Action Unit 판단·제안 (실행 금지)_
 
 - Phase 1 범위 논의 (실행 금지 전제 유지 여부 포함)
 - UI에 `hermes` 힌트 노출 여부 (지금은 Network/API만)
-- `package.json` `
+- `package.json`에 `"type": "module"` 추가 (테스트 ESM 경고 제거)
+
+## 한 줄
+
+**Hermes Phase 0 = 판단·제안만 동작이 규칙·wire·회귀·Production까지 닫혔다. 실행은 여전히 사람 쪽이다.**
