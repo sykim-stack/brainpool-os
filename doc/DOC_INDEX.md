@@ -69,6 +69,7 @@ _PM: Grok_
 - `BRAINPOOL_CLEAN_LEGACY_CODE_HISTORY_2026-10-02.md` — **brainpool-clean 레거시 코드 진화 역사** · 삭제하지 않음 · 에러도 메시지로 취급
 - `HERMES_PHASE0_BOUNDARY_LOCK_2026-10-09.md` — **Hermes Phase 0 경계 잠금 확인** (ADR-HERMES-000 재확인 · 실행 금지 · 5후보 고정)
 - `HERMES_PHASE0_COMPLETE_2026-10-23.md` — **Hermes Phase 0 완료** (규칙·chat wire·회귀 6건·Production 검증 · 실행 금지 유지)
+- `HERMES_PHASE1_PLAN_2026-10-23.md` — **Hermes Phase 1 계획** (제안 면 + 사람 승인 게이트 · Hermes 비실행 · 후보 비확장)
 
 ### root of doc/
 - `Identity Platform Architecture — Decision Log.md`
