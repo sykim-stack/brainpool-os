@@ -70,6 +70,8 @@ _PM: Grok_
 - `HERMES_PHASE0_BOUNDARY_LOCK_2026-10-09.md` — **Hermes Phase 0 경계 잠금 확인** (ADR-HERMES-000 재확인 · 실행 금지 · 5후보 고정)
 - `HERMES_PHASE0_COMPLETE_2026-10-23.md` — **Hermes Phase 0 완료** (규칙·chat wire·회귀 6건·Production 검증 · 실행 금지 유지)
 - `HERMES_PHASE1_PLAN_2026-10-23.md` — **Hermes Phase 1 계획** (제안 면 + 사람 승인 게이트 · Hermes 비실행 · 후보 비확장)
+- `HERMES_PHASE1_PROGRESS_2026-10-23.md` — **Hermes Phase 1 진행** (제안 면을 본챗에 배치 · 남김·확인질문은 사람 손으로만 기존 경로)
+- `HERMES_NAME_DISAMBIGUATION_2026-11-14.md` — **Hermes 이름 구분** (A: 앱 내 판단·제안 모듈 = 실행 금지 경계 유지 / B: 메스 = Hermes Agent, 사람이 시킬 때 이 PC에서 실행 · ADR 본문 수정 없음)
 
 ### root of doc/
 - `Identity Platform Architecture — Decision Log.md`
