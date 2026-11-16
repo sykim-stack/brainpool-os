@@ -139,6 +139,7 @@ Hermes에 이미 있는 그릇: 세션(`state.db`)은 프로필별, kanban은 �
 - ADR: `doc/adr/ADR-HERMES-000.md` (개정 없음)
 - Phase 1 Plan: `doc/status/HERMES_PHASE1_PLAN_2026-10-23.md` (A 경계 · 이 문서가 개정하지 않음)
 - 이름 구분: `doc/status/HERMES_NAME_DISAMBIGUATION_2026-11-14.md`
+- 연결 설계: `doc/status/HERMES_MES_CONNECTION_DESIGN_2026-11-15.md`
 - 구현 레포: `sykim-stack/hajuncore-app` **main**
 
 ## 한 줄

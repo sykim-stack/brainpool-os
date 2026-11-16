@@ -73,6 +73,7 @@ _PM: Grok_
 - `HERMES_PHASE1_PROGRESS_2026-10-23.md` — **Hermes Phase 1 진행** (제안 면을 본챗에 배치 · 남김·확인질문은 사람 손으로만 기존 경로)
 - `HERMES_NAME_DISAMBIGUATION_2026-11-14.md` — **Hermes 이름 구분** (A: 앱 내 판단·제안 모듈 = 실행 금지 경계 유지 / B: 메스 = Hermes Agent, 사람이 시킬 때 이 PC에서 실행 · ADR 본문 수정 없음)
 - `HERMES_MES_BOUNDARY_LOCK_2026-11-15.md` — **Hermes ↔ 메스 경계 잠금** (조사=하준아이가 자동 전달 / 수정=사람 승인 후 · A 경계 유지하고 바뀌는 것은 B · 착수는 통합작업 종료 이후)
+- `HERMES_MES_CONNECTION_DESIGN_2026-11-15.md` — **하준아이 ↔ 메스 연결 설계** (기존 브리지·메시지 배관 재사용 · 자동은 조사만, 수정은 승인 후 · 남은 공백은 "부를지 판단하는 신호" 하나 · 착수는 통합작업 이후)
 
 ### root of doc/
 - `Identity Platform Architecture — Decision Log.md`
