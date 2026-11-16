@@ -60,13 +60,30 @@ Phase 1 Plan(2026-10-23)은 **A(앱 안의 판단·제안 모듈)만** 다룬다
 - 하준아이↔메스 작업 기록을 별도 저장소 없이 브라우저에만 두는 것 (2번 제약의 해소 없이 착수 금지)
 - 통합작업 중 착수
 
+## 실측 — 열린 것 3개에 대한 답 (2026-11-15 추가 조사)
+
+| 열린 것 | 실측 결과 | 남은 것 |
+|---|---|---|
+| **작업 기록의 그릇** | **이미 있다.** 메시지 원본이 작업 결과를 실을 수 있다 — `post_message` 의 `msg_type` 화이트리스트에 **`work_result`** 가 있고 `decision`·`issue`·`question`·`answer` 도 함께 있다 (`lib/hajunApiPost.ts:201`). 별도 승인 테이블 없이 기존 메시지·View 흐름을 쓴다는 원칙과 일치 | **작성자 표기 하나.** `author_type` 화이트리스트는 `['human','ai']` 이고 `ai` 메시지는 `author_name: 'HajunAI'` 로 저장된다 (`:162`, `:268`, `:530`). 메스의 작업 결과를 `ai`/`메스` 로 남길지, `ai` 로 접을지 |
+| **앱이 `session.create` 에 `profile` 을 넘길지** | **자리가 이미 있고 값만 비어 있다** — `lib/hermesClient.ts:243`, `:260` 이 `profile: ''` 로 하드코딩 | 값을 어디서 받을지 (설정/요청) |
+| **정본 문서 참조** | **앱에 엔드포인트가 이미 있다** — `GET /api/docs?agent=<이름>`. 실측: `200` / `14,068 bytes` / 실문서 3건. 등록된 에이전트는 `claude2`·`clo2`·`clo3`·`pm` 뿐이고 **메스는 미등록** (`app/api/docs/route.ts` `AGENT_DOCS`) | `AGENT_DOCS` 한 줄 + 정본 `doc/contexts/` 문서 |
+
+부수 실측:
+
+- `context_package` 는 **폐기**되었고 `GET /api/docs?agent=…` 로 안내한다 (`lib/hajunApiGet.ts:261`).
+- 기억 참조 계약: `contexts?order=updated_at.desc&limit=1&select=understanding,last_synthesized_at,knowledge_unit_ids` (`lib/synthesizeUnderstanding.ts:16`).
+- 읽기 표면(GET): `yard_list` `product_candidates` `product_random` `product_timeline` `listing_queue` `listing_timeline` `room_list` `view_room` `view_livingroom` `view_yard` `contexts` `dev_contexts` `snapshots` `sync_snapshot`
+- 쓰기 표면(POST): `post_message` `ai_respond` `update_context` `chat` `synthesize_context` `summarize_context` `suggest_listing_title`
+- **메스는 저장 경로에 한 곳도 없다** — UI·주석에만 등장. 세션은 브라우저 보관(위 제약 2번).
+
 ## 열린 것 (미정)
 
 | 항목 | 상태 |
 |---|---|
-| 작업 기록의 그릇 — 하준아이 경유 작업과 `나+메스` 작업의 분리 | **미정** (위치·소유자) |
+| 메스 작업 결과의 **작성자 표기** (`ai`/`메스` vs `ai` 접기) | 미정 — 타입은 이미 있으나 author 화이트리스트가 `['human','ai']` 뿐 |
+| 앱이 `profile` 값을 어디서 받을지 | 미정 — 자리는 있고 값만 비어 있음 |
+| 메스를 `AGENT_DOCS` 에 등록할지 | 미정 — 엔드포인트·문서 경로는 준비됨 |
 | 승인 이력 위치 | 미정 (Phase 1 Plan §5-3과 같은 열린 질문) |
-| 앱이 `session.create`에 `profile`을 넘길지 | 미확인 — 메스 세션 분리와 직결 |
 
 ## 채우는 방법 (착수 시 · 비용 순)
 
