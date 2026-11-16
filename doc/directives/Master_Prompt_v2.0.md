@@ -1,4 +1,4 @@
-# BRAINPOOL OS 마스터 통합 문서 v2.1 (Constitution)
+# BRAINPOOL OS 마스터 통합 문서 v2.0 (Constitution)
 
 **작성자**: 클로 (설계 담당)  
 **날짜**: 2026-07-16  

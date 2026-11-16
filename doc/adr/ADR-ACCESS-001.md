@@ -6,7 +6,7 @@ ADR-ACCESS-001: CoreNull Access Policy (Room Visibility & Access Model)
 
 관련 문서
 
-Master_Prompt_v2.0 §15 (SEO Source Rule)
+Master_Prompt_v2.0 §3 (Source of Truth · Visibility) — ⚠ §15(SEO Source Rule)는 정본에 존재하지 않아 참조를 제거했다(2026-11-16)
 CoreNull Room & Seed Concept Specification v1.0
 Identity Platform Architecture — Decision Log (2026-07-19)
 목적

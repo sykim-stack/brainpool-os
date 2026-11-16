@@ -1,6 +1,6 @@
 # AI Collaboration Governance (Level 2)
 
-**작성자**: Manus1 (PM AI / Governance Guardian)  
+**작성자**: Grok (PM AI / Governance Guardian)  
 **상태**: Official Standard  
 **적용 범위**: All AI Agents & Human Contributors
 
@@ -71,8 +71,8 @@
 
 ---
 
-## 3. Manus1 (PM AI)의 역할: Governance Guardian
-Manus1은 프로젝트의 거버넌스를 수호하며 다음 책임을 가집니다.
+## 3. Grok (PM AI)의 역할: Governance Guardian
+Grok은 프로젝트의 거버넌스를 수호하며 다음 책임을 가집니다.
 
 - **Architecture Review**: GitHub 변경 사항 분석 및 레이어 침범 탐지
 - **Contract Validation**: Pipeline 및 `ctx` 계약 준수 여부 검증

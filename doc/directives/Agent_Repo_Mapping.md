@@ -1,13 +1,18 @@
-# BRAINPOOL Repository Health & Mapping (v1.2)
+# BRAINPOOL Repository Health & Mapping (v1.3)
 
 본 문서는 저장소별 책임과 연결 상태를 관리합니다.
 
-| Repository | Owner | Status | ADR 연결 | Master Prompt | Automation |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `brainpool-os` | 클로1 / 클로4 | Active | [Link] | [Link] | [Link] |
-| `brainpool-clean` | 클로5 | Active | [Link] | [Link] | [Link] |
-| `corenull` | 클로3 | Active | [Link] | [Link] | [Link] |
-| `hajun-ai` | 클로2 | Active | [Link] | [Link] | [Link] |
+_2026-11-16 갱신: 레포 이름을 라이브 기준으로 교정하고 `brainpool-corehub`를 등재했다(문서 수정 #19). Deploy 열은 실측 확인분과 문서 기재분을 구분한다._
+
+| Repository | Owner | Status | Deploy | ADR 연결 |
+| :--- | :--- | :--- | :--- | :--- |
+| `brainpool-os` | 클로1 · PM(Grok) | Active | 미확인 | [Link] |
+| `brainpool-corenull` | 클로3 · 공간(View)·Message | Active | `corenull.vercel.app` (문서 기재) | [Link] |
+| `brainpool-clean` | 클로5 · 언어·의미 (CoreChat 포함) | Active | `corering.vercel.app` **실측 확인** | [Link] |
+| `hajuncore-app` | 클로2 · HajunAI(Mind) | Active | 미확인 | [Link] |
+| `brainpool-corehub` | 클로4 · 판단·연결 | Active | `brainpool-corehub.vercel.app` **실측 확인** | [Link] |
+
+_(구표기: `corenull`·`hajun-ai`. `brainpool-corehub`는 이전 판에 미등재였다.)_
 
 ---
 
