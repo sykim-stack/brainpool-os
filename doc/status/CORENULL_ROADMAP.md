@@ -210,7 +210,7 @@ Master View + Block ON/OFF (새 Page 남발 금지)
 
 1. Neighbor 의미 고정 — **ADR-NEIGHBOR-000** (완료·의미 경계)
 2. 마당 이웃 섹션 · 스키마 — **ADR-ACCESS-002** (`corenull_neighbors`)
-3. Presentation 재정렬 — CoreHub pause 해제 후
+3. Presentation 재정렬 — CoreHub **연결 정합 이후** (구: "CoreHub pause 해제 후" — pause 표기 자체는 H-2 확정 대기)
 4. 나이테(Hero Ring) — 클로4 컨셉 확정 후
 5. 도서관 발행 · 창고 커머스
 6. 스위치 4컬럼 마이그레이션 (Anchor §12 — 별도 작업지시)

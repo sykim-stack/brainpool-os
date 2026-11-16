@@ -79,10 +79,10 @@ brainpool-clean은 **CoreHub/CoreNull 없이도 완전한 번역/채팅/단어�
 | -------- | --------------------------------- | ----------------------------- | ----------------------------- |
 | **역할**   | 번역/채팅/단어장 **Experience producer** | 패턴 인식 **Meaning extractor**   | 집/방 **Space provider**        |
 | **입/출력** | 브라우저 UI → tb_trans_logs, messages | CoreHub API (Fact 수집/분석)      | CoreNull API (houses, spaces) |
-| **결합도**  | 자체 완비 (CoreHub/CoreNull 없이도 동작)   | brainpool-clean에 의존 (Fact 소비) | brainpool-clean에 의존 (Fact 소비) |
+| **결합도**  | 자체 완비 (CoreHub/CoreNull 없이도 동작)   | CoreNull·CoreRing **양쪽에서 Fact 수신**(복수 생산자) | Fact 송신(outbox) + opportunities 수신 |
 
 **brainpool-clean은 "결과를 모르는 프로젝트"의 완성 형태**이다.  
-번역 채팅으로부터 3가지 Fact을 생산(tb_trans_logs, messages, corenull_houses)하지만, CoreHub의 패턴 인식 결과는 사용자에게 보여지지 않는다.
+번역 채팅으로부터 Fact을 생산(`tb_trans_logs`, `messages`)하고, CoreHub의 패턴 인식 결과는 `opportunities`로 소비자(CoreNull 마당·CoreRing UI)에 표시된다. _(2026-11-16 정정 — 구 서술: "corenull_houses 생산 / 결과가 보여지지 않음". 문서 수정 #11)_
 
 ---
 

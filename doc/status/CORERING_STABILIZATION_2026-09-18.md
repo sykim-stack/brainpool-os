@@ -76,7 +76,8 @@ CoreHub
       │
       └─ 재개                             ⏳ 다음 단계
 
-CoreRing 분석 → CoreHub/HajunAI 전달      ⏸️
+CoreRing 분석 → CoreHub 전달              ✅ (language.translated·relation.chat.sent 동작 중 — 2026-11-16 갱신, 문서 수정 #10)
+CoreRing 분석 → HajunAI 직접 전달         ⏸️ (CoreHub 경유로 규정)
 
 HajunAI
       │

@@ -1,5 +1,5 @@
 # BRAINPOOL OS Development Context Summary
-_기준일: 2026-08-01_
+_기준일: 2026-11-16 (구 2026-08-01 — 문서 수정 #5로 갱신)_
 _PM: Grok (Manus 대체)_
 
 ## 1. 프로젝트 현황 (Current Status)
@@ -9,11 +9,11 @@ _PM: Grok (Manus 대체)_
 
 ## 2. 주요 의사결정 기록 (Decision Log)
 - **[Level 0] Pipeline Contract**: `(ctx) => ctx` 계약 준수.
-- **[Level 1] One owner_key = One House**: **해결 완료**.
+- **[Level 1] One owner_key = One House**: **부분 확인** — 문서 규칙은 명시(`Identity_Platform_Architecture_v1.0`), DB 유니크 제약은 미확인(H-6). (문서 수정 #5)
 - **[Level 2] Commit-Centric Collaboration**: Commit = 상태 변화 이벤트.
 - **[Level 4] CoreNull Primitive 확정**:
   ```
-  House → Room → Post
+  House → Room → Message
   Seed / Flower / Fruit = Room 상태값 (별도 테이블 아님)
   seed_mode: true = 씨앗 상태 Room
   ```

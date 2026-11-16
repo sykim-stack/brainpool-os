@@ -24,12 +24,6 @@ _(구표기: `corenull`·`hajun-ai`. `brainpool-corehub`는 이전 판에 미등
 
 *원칙: 하나의 데이터는 반드시 하나의 Owner만 가진다.*
 
-<!--
-아래는 brainpool-os 저장소의 doc/directives/Agent_Repo_Mapping.md 에 추가할 내용입니다.
-corenull 저장소가 아니라 brainpool-os 저장소 문서라 제가 직접 못 고치고, 텍스트만 준비했습니다.
-"데이터 소유권" 섹션 바로 아래에 이 섹션을 추가해주세요.
--->
-
 ## Identity (Platform-level, 코드 위치만 corenull)
 
 - `link_codes` 테이블과 `/api/identity` 라우트는 **corenull 저장소 안에 물리적으로 위치**하지만,
