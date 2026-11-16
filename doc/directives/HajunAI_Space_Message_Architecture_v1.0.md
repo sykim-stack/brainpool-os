@@ -5,9 +5,9 @@
 | 항목 | 내용 |
 | --- | --- |
 | 문서 성격 | 하준AI 상위 설계·운영 기준 |
-| 현재 상태 | 설계 초안 (구조 확정용 · 구현 전) |
+| 현재 상태 | **운영 중 / 구조 확정** (관제·개발 공간 + `dev_contexts` 구현·운영 — 2026-11-16 갱신, 문서 수정 #22) |
 | 핵심 범위 | 관제마당·개발마당·엔진방·의미 View·메시지 원본 |
-| 구현 범위 | 구현 전 구조 확정 문서 |
+| 구현 범위 | 구조 확정 + 부분 구현 — 개발마당 5 엔진방 = `lib/hajunRooms.ts` / 관제마당 5 의미 View = **문서만**(화면 배지 "문서주장") |
 | 최종 결정자 | 하준(함장) |
 | 관련 | CoreNull Anchor, `HajunAI_AI_CoreNull_Philosophy_v1.0.md`, DevChat 지시서, ADR-NEIGHBOR-000 |
 | 충돌 시 | **CoreNull Anchor** · Human First · 본 문서. 제품 일상 chat 계약을 대체하지 않는다. |
@@ -29,7 +29,7 @@
 
 > **메시지가 세계의 원본이고, 공간은 그 세계를 바라보는 관점이다.**
 
-브라이언풀에서 모든 콘텐츠는 메시지로 기록한다. 사용자의 질문, AI의 분석, 개발 결과, 관제의 검증, 사람의 결정, 오류, 작업 상태, 지식, 관찰, **생활 기록(Post)** 은 모두 메시지다.
+브라이언풀에서 모든 콘텐츠는 메시지로 기록한다. 사용자의 질문, AI의 분석, 개발 결과, 관제의 검증, 사람의 결정, 오류, 작업 상태, 지식, 관찰, **생활 기록(Message)** 은 모두 메시지다.
 
 마당·거실·방·프로젝트·엔진·AI는 메시지를 소유하는 콘텐츠가 아니다. 이들은 메시지와 관계를 맺거나, 메시지를 특정 목적에 따라 필터링·정렬·해석·표현하는 공간 및 View다.
 
@@ -43,7 +43,7 @@ Message World
           └── 개발마당 · 거실 · 엔진방
 ```
 
-**CoreNull**이 다루는 생활 세계의 House / Room / Post / seed·fruit 스위치도, 하준AI 안에서는 **메시지·관계·View**로 읽고 개발·관제한다. CoreNull 제품 공간의 SoT·규칙은 Anchor가 이긴다.
+**CoreNull**이 다루는 생활 세계의 House / Room / Message / seed·fruit(파생값)도, 하준AI 안에서는 **메시지·관계·View**로 읽고 개발·관제한다. CoreNull 제품 공간의 SoT·규칙은 Anchor가 이긴다.
 
 ---
 
@@ -77,7 +77,7 @@ Message World
 ```text
 개발마당
 ├── 거실
-├── CoreNull          ← 생활 공간 · House/Room/Post · seed·fruit · UI·규칙
+├── CoreNull          ← 생활 공간 · House/Room/Message · seed·fruit(파생값) · UI·규칙
 ├── CoreChat
 ├── CoreRing
 ├── CoreHub
@@ -104,7 +104,7 @@ Message World
 
 | 엔진방 | 엔진의 본질 | 주요 개발 메시지 |
 | --- | --- | --- |
-| **CoreNull** | **생활 공간 (Space / Life)** | House·Room·Post, 마당·거실·서재 View, seed/fruit **스위치**, 참여자, 생활 기록, 공간 UI·Access·규칙, Neighbor |
+| **CoreNull** | **생활 공간 (Space / Life)** | House·Room·Message, 마당·거실·서재 View, seed/fruit **파생값**(roomStage — 스위치 아님), 참여자, 생활 기록, 공간 UI·Access·규칙, Neighbor |
 | CoreChat | 흐름과 상호작용 | 대화 흐름, 세션, 상호작용, 오류 |
 | CoreRing | 언어와 의미 | 번역, 언어 지식, 의미 분석, 패턴 |
 | CoreHub | 연결과 운영 | Core 간 연결, 전달, 취합, 통합 |
@@ -149,11 +149,11 @@ CoreNull은 “부가 엔진”이 아니라 **사람이 사는 공간**의 엔�
 
 ## 7. 메시지 중심 원칙
 
-1. **메시지 = SoT** (질문·분석·오류·결정·생활 Post 포함)
+1. **메시지 = SoT** (질문·분석·오류·결정·생활 Message 포함)
 2. **View ≠ 콘텐츠** — 새 화면 전에 “새 메시지인가, 다른 View인가?”
 3. **복사 금지** — 관계·View·상태로 연결
 
-CoreNull 생활 Post와 하준AI 개발/관제 메시지는 목적이 다를 수 있으나, **복제 SoT를 만들지 않는다.** Ownership은 Core별 유지 (CoreNull 테이블에 Hajun이 함부로 write하지 않음).
+CoreNull 생활 Message와 하준AI 개발/관제 메시지는 목적이 다를 수 있으나, **복제 SoT를 만들지 않는다.** Ownership은 Core별 유지 (CoreNull 테이블에 Hajun이 함부로 write하지 않음).
 
 ---
 

@@ -14,7 +14,7 @@ brainpool-os/doc/
 ↓
 hajuncore-app (Vercel)
 ↓
-Claude 세션 시작 → context_package 읽기
+Claude 세션 시작 → `/api/docs?agent=...` 읽기
 ↓
 철학 + 현황 + Knowledge = 완전한 맥락
 ```
@@ -23,13 +23,13 @@ Claude 세션 시작 → context_package 읽기
 새로운 AI 세션을 시작할 때 다음 명령을 사용하여 맥락을 주입하십시오.
 
 ### 클로2 (HajunAI 담당)
-> "당신은 클로2입니다. https://hajuncore-app.vercel.app/api/hajun?action=context_package 이 URL을 읽고 작업을 시작하세요."
+> "당신은 클로2입니다. https://hajuncore-app.vercel.app/api/docs?agent=clo2 이 URL을 읽고 작업을 시작하세요."
 
 ### 다른 에이전트 (클로3, 4, 5)
 > "당신은 [역할명]입니다. https://hajuncore-app.vercel.app/api/docs?file=clo2 등 관련 Context Contract를 읽고 작업을 시작하세요."
 
 ## 3. 주요 API 엔드포인트
-- **맥락 패키지**: `GET /api/hajun?action=context_package` (통합 프롬프트 및 현황)
+- **맥락 패키지**: `GET /api/docs?agent=<agent>` — `context_package` 는 **폐기됨**(라이브 응답이 "폐기되었습니다. GET /api/docs?agent=... 를 사용하세요."로 명시). (2026-11-16 갱신 — 문서 수정 #25)
 - **문서 조회**: `GET /api/docs?file=[파일명]` (GitHub 실시간 fetch)
 - **개발 현황**: `GET /api/hajun?action=dev_contexts`
 - **Knowledge Sync**: `GET /api/hajun?action=sync_snapshot&house_id=[UUID]`

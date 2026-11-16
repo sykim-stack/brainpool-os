@@ -61,7 +61,7 @@ CoreNull은 **외형(View)만** 제공한다. 기능은 다른 Core를 재사용
 Primary:   sykim-stack/brainpool-corenull
 Reference: sykim-stack/brainpool-os (Constitution, 지시서)
 DB:        Supabase grlfocvlfatuvphkyivd (public 스키마, corenull_ 접두사)
-Vercel:    corenull.vercel.app (Hobby, API 라우트 12개 한도)
+Vercel:    corenull.vercel.app (Hobby, API 라우트 한도 주의 — 2026-11-16 실측 17개 route)
 ```
 
 ---

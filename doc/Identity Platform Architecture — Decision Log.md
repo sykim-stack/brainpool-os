@@ -101,9 +101,9 @@ Architecture Track          Development Track
 
 ## Next Step
 
-- [ ] `Identity_Platform_Architecture_v1.0.md` 초안 작성 (보카 원안 + 오늘 합의 사항 반영)
-- [ ] 기존 v3.0 문서에 Superseded 헤더 삽입
-- [ ] `AI_Collaboration_Governance.md` Hierarchy 표 갱신
+- [x] `Identity_Platform_Architecture_v1.0.md` 초안 작성 (보카 원안 + 오늘 합의 사항 반영) — **완료** (문서 존재, 2026-11-16 문서 수정 #20)
+- [ ] 기존 v3.0 문서에 Superseded 헤더 삽입 — **범위 밖** (대상 문서가 doc/에 없음)
+- [x] `AI_Collaboration_Governance.md` Hierarchy 표 갱신 — **완료** (`Identity_Platform_Architecture_v1.0`이 Level 1로 등재됨, 2026-11-16 문서 수정 #21)
 - [x] LinkCredential target 필드 추가 — 클로3(CoreNull) 작업지시서 발행 및 DB/API 구현 완료 (2026-07-19)
 
 ---
@@ -125,7 +125,7 @@ Decision Log 작성 이후 CoreNull 실작업이 진행되어 아래 항목이 �
 - 원인: CoreRing 담당이 언어별(ko/vi) 처리 중 House 단위까지 잘못 분리 + 테스트 데이터가 고정된 것으로 추정 (여리 직접 확인 및 처리).
 
 ### 갱신된 Next Step
-- [ ] `Identity_Platform_Architecture_v1.0.md` 초안 작성 — House UX 원칙(1인 1집) 실제 구현 사례를 문서에 반영
-- [ ] 기존 v3.0 문서에 Superseded 헤더 삽입
-- [ ] `AI_Collaboration_Governance.md` Hierarchy 표 갱신
+- [x] `Identity_Platform_Architecture_v1.0.md` 초안 작성 — House UX 원칙(1인 1집) 실제 구현 사례를 문서에 반영 (문서 존재, 2026-11-16 문서 수정 #20)
+- [ ] 기존 v3.0 문서에 Superseded 헤더 삽입 — **범위 밖** (대상 문서가 doc/에 없음)
+- [x] `AI_Collaboration_Governance.md` Hierarchy 표 갱신 (2026-11-16 문서 수정 #21)
 - [ ] Agent_Repo_Mapping.md에 "Identity 코드는 corenull 저장소 위치, 개념은 Platform-level" 명시 (클로3 작업지시서 항목)

@@ -29,7 +29,7 @@ Phase A 화면 목업을 **HTML 소스만**으로 정리·보강한다.
 4. **서재** — `corenull-library-final.html`
 5. **방 상세** — `corenull-room-detail.html` (참여자 스트립, 스위치는 Owner만)
 
-광장 본편·이웃 주소록 고도화는 Phase B. 필요 시 마당 상단 "준비중" 뱃지만.
+광장 본편은 **이미 구현됨**(`app/plaza/page.tsx` + `PlazaHeroBlock`, 2026-11-10/11 커밋) — 구현이 Phase 경계를 넘어갔다. 이웃 주소록 고도화는 Phase B. (2026-11-16 갱신 — 문서 수정 #30)
 
 ### 산출물
 

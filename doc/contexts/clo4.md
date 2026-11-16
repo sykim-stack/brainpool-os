@@ -103,7 +103,17 @@ Room 상세("방")는 탭 없음 — 거실/마당에서 드릴다운.
 
 ---
 
+## 3.5 Repository / DB / Vercel (2026-11-16 추가 — 문서 수정 #31)
+
+| 항목 | 값 |
+| :--- | :--- |
+| Repository | `brainpool-corehub` — **클로4 담당** (구 미비 항목: clo4.md에 이 섹션이 없었다) |
+| DB | Supabase schema `corehub` (facts · connections · meanings · opportunities · learning_logs) |
+| Vercel | `brainpool-corehub.vercel.app` (2026-11-16 실측 확인) |
+
 ## 4. 완료된 목업 (소스, 클로3 전달용)
+
+**2026-11-16 정정(문서 수정 #32)**: 아래 HTML 소스 파일들은 **레포에 존재하지 않는다**. 실제 대응물은 `app/mockup/page.tsx`(임시 데이터)이다. 표는 기록 보존용으로 남긴다.
 
 | 파일 | 내용 |
 | :--- | :--- |
@@ -127,7 +137,7 @@ CoreNull은 판단 안 함. 아래는 전부 **"CoreHub가 계산해서 내려�
 | 나이테 굵기/개수/색 | 정적 SVG, 고정 | House 분석 결과값을 SVG 파라미터로 매핑 (미설계) |
 | 마당 "오늘의 발견" | 💡 아이콘 유지, opportunity 표시 | 이미 연결됨 (기존 기능) |
 | 이웃 주소록 "추천" | UI 자리만 (더미 카드 1개) | CoreHub opportunity_type 확장 필요 |
-| 광장 전체 | 뱃지만, 화면 없음 | CoreHub pause 해제 후 착수 |
+| 광장 전체 | **본편 화면 구현됨**(`app/plaza/page.tsx`) | 연결 정합 이후 (구: pause 해제 후 착수) — 2026-11-16 갱신, 문서 수정 #33 |
 
 ---
 

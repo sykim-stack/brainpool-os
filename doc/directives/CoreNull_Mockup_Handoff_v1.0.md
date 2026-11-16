@@ -14,6 +14,8 @@
 
 > 클로4는 **보이는 것**만 정한다. 클로3는 **이미 있는 소스**에 붙인다.  
 > 설명 문서 없이 **HTML 목업 소스**만 넘긴다.
+>
+> ⚠ **2026-11-16 정정(문서 수정 #29)**: `corenull-*.html` 소스는 corenull·brainpool-os 어디에도 없다. 실제로 존재하는 대응물은 **`app/mockup/page.tsx`(임시 데이터)** 이다. §4 표의 파일명은 기록 보존용으로만 남긴다.
 
 ---
 
@@ -74,7 +76,7 @@ target_date null → "🌿 성장" 고정
 | **거실 (Living)** | 내가 보는 내 집 | `app/me/page.tsx`, `app/houses/[houseId]` | `corenull-livingroom-final.html` |
 | **방 (Room)** | Room 상세·공동 포스팅 | `app/rooms/[id]/RoomClient.tsx` | `corenull-room-detail.html` |
 | **서재 (Library)** | harvested=true 모음 | `app/me/library/page.tsx`, `api/.../library` | `corenull-library-final.html` |
-| **광장 (Plaza)** | public 발견 (Phase A는 카드/뱃지) | `app/page.tsx` 등 public 목록 | 마당 상단 뱃지 / 추후 |
+| **광장 (Plaza)** | public 발견 — **본편 구현됨** | `app/plaza/page.tsx` (+`PlazaHeroBlock`) | 본편 화면 (2026-11-10/11 커밋 · 2026-11-16 갱신, 문서 수정 #28) |
 | **글쓰기** | Message 작성 | `app/write/page.tsx` | (필요 시 별도 목업) |
 | **탭바** | 하단 3탭 | `components/corenull/TabBar.tsx` | 목업 공통 하단 탭 |
 | **공유** | Share | `components/corenull/ShareModal.tsx` | — |
