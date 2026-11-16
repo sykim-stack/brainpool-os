@@ -76,7 +76,7 @@ Vercel:    corering.vercel.app
    문장→Phrase→Word 자동 추출 파이프라인은 설계만 합의, 미구현
    (Gemini 응답에 phrases/words 동시 요청하는 구조로 전환 예정, 2026-07-31 합의)
 
-6. SEO (ADR-SEO-001)
+6. SEO (ADR-SEO-001) — ⚠ `doc/adr/` 에 해당 파일이 없다(2026-11-16 확인). 원칙 원문은 이 문서 §SEO SOURCE RULE(L325 부근)에 보존돼 있다
    원칙: SEO URL = Share URL = Canonical URL, 전부 /rooms/{roomId}로 수렴
    lib/seo/{shared,room}.ts — 공개범위(is_public) 체크 → 아니면 즉시 noindex
    app/rooms/[roomId]/page.tsx — 서버 컴포넌트, redirect 없이 Home을

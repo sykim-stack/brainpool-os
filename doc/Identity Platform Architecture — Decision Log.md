@@ -128,4 +128,4 @@ Decision Log 작성 이후 CoreNull 실작업이 진행되어 아래 항목이 �
 - [x] `Identity_Platform_Architecture_v1.0.md` 초안 작성 — House UX 원칙(1인 1집) 실제 구현 사례를 문서에 반영 (문서 존재, 2026-11-16 문서 수정 #20)
 - [ ] 기존 v3.0 문서에 Superseded 헤더 삽입 — **범위 밖** (대상 문서가 doc/에 없음)
 - [x] `AI_Collaboration_Governance.md` Hierarchy 표 갱신 (2026-11-16 문서 수정 #21)
-- [ ] Agent_Repo_Mapping.md에 "Identity 코드는 corenull 저장소 위치, 개념은 Platform-level" 명시 (클로3 작업지시서 항목)
+- [x] Agent_Repo_Mapping.md에 "Identity 코드는 corenull 저장소 위치, 개념은 Platform-level" 명시 (클로3 작업지시서 항목) — **반영됨** (해당 섹션 존재, 2026-11-16 확인)
