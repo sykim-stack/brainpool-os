@@ -11,6 +11,7 @@ _PM: Grok_
 | **0** | `directives/Master_Prompt_v2.0.md` | Constitution (최상위 헌법) |
 | **1** | `directives/Identity_Platform_Architecture_v1.0.md` | Identity Platform |
 | **1** | `directives/Governance_Foundation_v1.0.md` | 운영 원칙 요약 |
+| **1** | `directives/Core_Connection_Contract_v1.0.md` | **Core 연결 계약 (fact_type · payload · 파이프라인 · 소비)** |
 | **1** | `directives/CoreNull_Core_Principles_v1.2.md` | **CoreNull Anchor** |
 | **1** | `directives/HajunAI_AI_CoreNull_Philosophy_v1.0.md` | HajunAI = AI판 CoreNull |
 | **1** | `directives/HajunAI_Space_Message_Architecture_v1.0.md` | **HajunAI 공간·메시지 아키텍처** |
