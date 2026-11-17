@@ -76,7 +76,7 @@ Vercel:    corering.vercel.app
    문장→Phrase→Word 자동 추출 파이프라인은 설계만 합의, 미구현
    (Gemini 응답에 phrases/words 동시 요청하는 구조로 전환 예정, 2026-07-31 합의)
 
-6. SEO (ADR-SEO-001) — ⚠ `doc/adr/` 에 해당 파일이 없다(2026-11-16 확인). 원칙 원문은 이 문서 §SEO SOURCE RULE(L325 부근)에 보존돼 있다
+6. SEO (ADR-SEO-001, 미발행) — ⚠ `doc/adr/` 에 해당 파일이 없다(2026-11-16 확인). 원칙 원문은 이 문서 §SEO SOURCE RULE에 보존. 인용 5곳은 2026-11-17 정리 완료 → clo5.md §SEO SOURCE RULE 참조로 교체됨.
    원칙: SEO URL = Share URL = Canonical URL, 전부 /rooms/{roomId}로 수렴
    lib/seo/{shared,room}.ts — 공개범위(is_public) 체크 → 아니면 즉시 noindex
    app/rooms/[roomId]/page.tsx — 서버 컴포넌트, redirect 없이 Home을
@@ -137,7 +137,7 @@ Vercel:    corering.vercel.app
   ADR-004:     Pronunciation data 소유권은 CoreRing
   ADR-005~007: CoreRing 책임 범위, Language Knowledge의 UI 독립성,
                i18n/localization 독립성
-  ADR-SEO-001: SEO URL = Share URL = Canonical URL (2026-07-19 확정,
+  SEO SOURCE RULE: SEO URL = Share URL = Canonical URL (2026-07-19 확정,
                실제 구현·배포·검증까지 완료됨)
 이유: Pipeline Contract 및 데이터 소유권 판단의 근거가 여기 있다.
 ```
@@ -284,7 +284,7 @@ CoreRing은 Language Knowledge Engine으로서 이 테이블들의 1차 소유 �
    상대방에게 명확히 알린다.
 
 ✅ 검색 가능한 공개 콘텐츠는 정확히 색인한다.
-   ADR-SEO-001에 따라 공개(is_public) 방만 SEO 대상으로 하고,
+   §SEO SOURCE RULE에 따라 공개(is_public) 방만 SEO 대상으로 하고,
    비공개/삭제된 리소스는 fail-safe로 noindex 처리한다.
 
 ✅ 새 Primitive는 최후의 수단으로만 도입한다.
@@ -322,7 +322,7 @@ Fail-safe 원칙:
   SEO metadata 조회 실패/비공개 → noindexMetadata 무조건 반환
   (확실히 public인 것만 노출, 애매하면 무조건 비노출)
 
-SEO SOURCE RULE (ADR-SEO-001):
+SEO SOURCE RULE:
   공유 URL = Canonical URL = Sitemap URL, 전부 /rooms/{roomId} 하나로 수렴
   redirect 기반 구조 금지 — 서버 컴포넌트가 최종 목적지를 직접 렌더
 

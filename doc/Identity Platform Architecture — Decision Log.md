@@ -93,7 +93,7 @@ Architecture Track          Development Track
    확정                       — 이미 해결됨 ✓)
 2. Hierarchy 표 갱신
 3. CoreRing SEO 구현
-   (ADR-SEO-001 승인 완료,
+   (clo5.md §SEO SOURCE RULE 승인 완료,
    클로5 작업지시서 기발행)
 ```
 
@@ -114,7 +114,7 @@ Decision Log 작성 이후 CoreNull 실작업이 진행되어 아래 항목이 �
 
 ### CoreRing SEO — 완료 (TASK-03~06)
 - robots.ts 정리, sitemap.ts(public 방만), `/rooms/{id}` SSR(redirect 없음), canonical/OG/Twitter, noindex fail-safe, ShareRoomModal 공유 URL 통일, JSON-LD(SoftwareApplication + DiscussionForumPosting) — 전부 코드 반영·배포·검증 완료.
-- ADR-SEO-001이 문서상 원칙에서 실제 구현/검증 완료 상태로 전환됨.
+- SEO SOURCE RULE(clo5.md)이 문서상 원칙에서 실제 구현/검증 완료 상태로 전환됨.
 
 ### House 구조 재설계 — 완료
 오늘 낮에 스크린샷으로 발견된 문제(House가 사용자 생성 객체로 취급되어 한국집/베트남집/테스트 등 중복 생성, 방 목록 화면 부재)가 같은 날 해결됨.
