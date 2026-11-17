@@ -60,6 +60,9 @@ _PM: Grok_
 - `ADR-HERMES-000.md` — **Phase 0 Action Unit 경계. 판단·5후보 제안만. 실행 금지** (2026-10-08)
 - `ADR-SEED-ADAPTER-000.md` — Adapter 제거 트리거
 - `ADR-RINGBLOCK-000.md` — RingBlock 표현 계약
+- `ADR-CONNECT-001.md` — L4 재제공 경로 (해석 연결형, CoreHub 경유)
+- `ADR-IDENTITY-001.md` — 신원·식별자 전달 주체 (CoreNull 요청, 번역 요청 (a))
+- `ADR-CONSUME-001.md` — 소비의 정의 (소비=조회, PATCH 폐지)
 
 ### status/
 - `DEV_CONTEXT_SUMMARY.md` / `CORENULL_ROADMAP.md`

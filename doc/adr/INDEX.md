@@ -9,6 +9,9 @@ _용도: 탐색 전용. 결정을 재서술하지 않는다._
 | ID | 파일 | 핵심 한 줄 | 상태 | 관련 Core |
 |----|------|------------|------|-----------|
 | ACCESS-001 | [ADR-ACCESS-001.md](./ADR-ACCESS-001.md) | Room Visibility와 Access Policy 분리. family는 `corenull_house_members.room_id` 재사용. 새 participants 테이블 기각 | Active | CoreNull |
+| CONNECT-001 | [ADR-CONNECT-001.md](./ADR-CONNECT-001.md) | L4 재제공 경로 (해석 연결형, CoreHub 경유) | Active | CoreHub, HajunAI |
+| IDENTITY-001 | [ADR-IDENTITY-001.md](./ADR-IDENTITY-001.md) | 신원·식별자 전달 주체 (CoreNull 요청, 번역 요청 (a)) | Active | CoreNull, CoreRing |
+| CONSUME-001 | [ADR-CONSUME-001.md](./ADR-CONSUME-001.md) | 소비의 정의 (소비=조회, PATCH 폐지) | Active | CoreHub |
 | ACCESS-002 | [ADR-ACCESS-002.md](./ADR-ACCESS-002.md) | Neighbor 성립=요청→수락. 골목=목록+입구(피드 제외). Access와 비연동 | Active | CoreNull, CoreHub |
 | NEIGHBOR-000 | [ADR-NEIGHBOR-000.md](./ADR-NEIGHBOR-000.md) | Neighbor = House↔House 관계. 권한이 아님. Access와 비종속 | Active | CoreNull, CoreHub |
 | CONFIRM-000 | [ADR-CONFIRM-000.md](./ADR-CONFIRM-000.md) | adopted ≠ decision. AI 채택과 사람 확정을 분리. prior_decisions는 사람 확정만 | Active | HajunAI |
