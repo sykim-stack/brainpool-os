@@ -1,4 +1,5 @@
 # BRAINPOOL OS Development Context Summary
+> **상태 조회 기준**: [STATUS_INDEX.md](./STATUS_INDEX.md) — 현재 상태는 이 문서 1곳만 본다.
 _기준일: 2026-11-16 (구 2026-08-01 — 문서 수정 #5로 갱신)_
 _PM: Grok (Manus 대체)_
 

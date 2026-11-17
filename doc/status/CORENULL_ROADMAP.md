@@ -1,4 +1,5 @@
 # CoreNull 실행 로드맵
+> **상태 조회 기준**: [STATUS_INDEX.md](./STATUS_INDEX.md) — 현재 상태는 이 문서 1곳만 본다.
 _기준일: 2026-07-31 / 갱신: 2026-08-20 (A-2 마당 명칭 정리 · Neighbor-000·UI Architecture 참조)_
 _수신: 클로3 (코어널)_
 _상태: Active — Phase A 실행 중_

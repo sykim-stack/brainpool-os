@@ -1,4 +1,5 @@
 # Status — Hermes Phase 0 완료 (2026-10-23)
+> **상태 조회 기준**: [STATUS_INDEX.md](./STATUS_INDEX.md) — 현재 상태는 이 문서 1곳만 본다.
 
 _PM: Grok_  
 _범위: HajunAI chat · Action Unit 판단·제안 (실행 금지)_

@@ -1,4 +1,5 @@
 # Status — HajunAI 아이 설계 (2026-09-14)
+> **상태 조회 기준**: [STATUS_INDEX.md](./STATUS_INDEX.md) — 현재 상태는 이 문서 1곳만 본다.
 
 _PM: Grok_
 

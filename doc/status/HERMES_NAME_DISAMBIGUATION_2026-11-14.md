@@ -1,4 +1,5 @@
 # Status — Hermes 이름 구분 (2026-11-14)
+> **상태 조회 기준**: [STATUS_INDEX.md](./STATUS_INDEX.md) — 현재 상태는 이 문서 1곳만 본다.
 
 _작성: 메스 (Hermes Agent) · 확정: 사람_
 _관련: ADR-HERMES-000 · HERMES_PHASE0_BOUNDARY_LOCK_2026-10-09 · HERMES_PHASE1_PLAN_2026-10-23_

@@ -1,4 +1,5 @@
 # Status — Hermes Phase 1 진행 (2026-10-23)
+> **상태 조회 기준**: [STATUS_INDEX.md](./STATUS_INDEX.md) — 현재 상태는 이 문서 1곳만 본다.
 
 _PM: Grok_  
 _계획: `HERMES_PHASE1_PLAN_2026-10-23.md`_

@@ -1,4 +1,5 @@
 # BRAINPOOL 통합 구조·조사 기록 v2
+> **상태 조회 기준**: [STATUS_INDEX.md](./STATUS_INDEX.md) — 현재 상태는 이 문서 1곳만 본다.
 
 **경험에서 생태계로**
 

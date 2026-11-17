@@ -1,4 +1,5 @@
 # Status — Hermes ↔ 메스 경계 잠금: 조사/수정 분리 (2026-11-15)
+> **상태 조회 기준**: [STATUS_INDEX.md](./STATUS_INDEX.md) — 현재 상태는 이 문서 1곳만 본다.
 
 _작성: 메스 (Hermes Agent) · 결정: 사람 (2026-11-15)_
 _전제: ADR-HERMES-000 Active · Phase 0 Complete · Phase 1 Plan(2026-10-23) · 이름 구분(2026-11-14)_
