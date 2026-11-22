@@ -283,3 +283,14 @@ CREATE TABLE IF NOT EXISTS corehub.auth_owner_links (
 
 ---
 *본 문서는 BRAINPOOL 통합연결 작업의 마스터 기준 문서이며, 새로운 설계 추측이나 원본 문서 변경을 목적으로 하지 않습니다. 다음 작업자는 '미확인 항목'을 참조하여 진행 계획을 수립하시기 바랍니다.*
+
+## 12. 2026-11-22 후속 진행 기록: PR 상태 재확인
+
+2026-11-22에 GitHub PR 메타데이터와 체크 결과를 읽기 전용으로 재확인했다. 두 PR 모두 OPEN이며 base/head는 기존 기록과 일치한다. 이번 확인에서는 PR 수정, 병합, 브랜치 변경 및 배포를 하지 않았다.
+
+| 항목 | 확인 결과 | 체크 결과 | 다음 경계 |
+|---|---|---|---|
+| Hajun PR #2 | `mes/integration-1` → `feat/corering-handoff-button`, head `147f3573ea59eaf9388c4f07c9db71c18ddf9c1e`, OPEN | Vercel 및 Preview Comments 성공 | CoreRing 수신 PR #40에 의존. Preview 로그인/E2E 및 병합은 실행하지 않음. |
+| CoreRing PR #40 | `main` ← `feat/corering-handoff-receive`, head `5247763aa2c448b54ffdd1e76c3b9458eb29896e`, OPEN | brainpool-clean Vercel, corering Vercel 및 Preview Comments 성공 | 체크 성공은 배포 준비 신호일 뿐 인증/handoff 동작 검증이 아님. 병합·Production 배포는 하지 않음. |
+
+체크 정보 출처: [Hajun PR #2](https://github.com/sykim-stack/hajuncore-app/pull/2), [CoreRing PR #40](https://github.com/sykim-stack/brainpool-clean/pull/40). 확인 시각은 2026-11-22 23:52 KST다. 다음 우선 작업은 Hajun/CoreHub Production 환경이 같은 Supabase project ref를 사용하는지 비밀값 노출 없이 확인하는 것이다. 이 값은 GitHub 공개 PR 정보만으로 확정할 수 없으며, Vercel/Supabase 환경 설정을 읽을 권한이 확인되기 전까지 추정하거나 변경하지 않는다.
