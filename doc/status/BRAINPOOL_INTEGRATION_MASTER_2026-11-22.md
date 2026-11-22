@@ -302,3 +302,20 @@ CREATE TABLE IF NOT EXISTS corehub.auth_owner_links (
 - 환경변수 값·비밀키를 요청하거나 출력하지 않았고, 설정을 변경하지 않았다.
 - 재개 조건: Vercel/Supabase 읽기 전용 접근을 연결하거나, 각 프로젝트의 Supabase URL에서 project ref 부분만 사용자가 제공한다. 키·토큰·전체 환경변수 값은 공유하지 않는다.
 - 다음 확인: Hajun 및 CoreHub Production ref 일치 여부를 대조하고, CoreNull/CoreRing도 같은 운영 DB를 의도하는지 구성 기준과 대조한다. 불일치가 발견되어도 이 문서화 작업의 범위에서는 변경하지 않고 별도 승인 대상으로 기록한다.
+
+## 14. 2026-11-23 후속 진행 기록: Supabase project ref 대조
+
+2026-11-23에 GitHub, Supabase 및 Vercel 연결을 이용해 project ref를 읽기 전용으로 대조했다. 환경변수 값은 키나 토큰을 포함해 비밀값을 출력·저장하지 않았다. Vercel에서 민감(sensitive)으로 지정된 URL 값은 연결 권한상 결과에 포함되지 않아, 해당 서비스의 실제 Production ref를 모두 확정할 수는 없다.
+
+### 확인된 사실
+
+- Supabase 프로젝트 목록에 `Jena-Voca-01` / `grlfocvlfatuvphkyivd`가 `ACTIVE_HEALTHY`로 있고, 별도 `hajunai` / `yqbypcqkgrdyvslzbtid` 프로젝트도 `ACTIVE_HEALTHY`로 존재한다. `sykim-stack's Project` / `loskicxyjrzldfeonall`은 `INACTIVE`로 표시됐다. 별도 `hajunai` 프로젝트가 있다는 사실만으로 이를 staging으로 간주하지 않는다.
+- Hajun Vercel 프로젝트의 `NEXT_PUBLIC_SUPABASE_URL`은 `development`, `preview`, `production` 모두 대상으로 설정되어 있고, URL의 ref는 `grlfocvlfatuvphkyivd`였다. Hajun의 공개 Production 페이지에서 내려오는 클라이언트 번들에서도 동일한 ref를 확인했다. 응답 페이지 본문이나 비밀값은 저장하지 않았다.
+- CoreNull 저장소의 Supabase linked-project 메타데이터와 `doc/CORENULL_MASTER.md`는 `grlfocvlfatuvphkyivd`를 가리킨다. CoreHub의 설계 문서도 공유 DB ref를 `grlfocvlfatuvphkyivd`로 명시한다.
+- Vercel에는 Hajun, CoreNull, CoreHub, CoreRing에 대응하는 프로젝트가 연결되어 있고, 각 프로젝트에 Supabase URL 변수명이 존재한다. 단, CoreNull/CoreHub/CoreRing URL 값은 Vercel에서 민감 값으로 마스킹되어 읽히지 않았다. CoreHub 공개 Production 도메인 및 확인된 배포 URL은 HTTP 404를 반환해 공개 클라이언트 번들로 ref를 대조할 수도 없었다.
+
+### 결론과 후속 경계
+
+Hajun Production 클라이언트 설정은 통합 프로젝트 `grlfocvlfatuvphkyivd`를 사용하는 것이 확인됐다. CoreHub/CoreNull는 저장소의 기준 설정이 같은 ref를 가리키지만, Vercel Production에 실제 저장된 값과의 일치는 아직 검증되지 않았다. 따라서 **Hajun ↔ CoreHub Production ref 일치 여부는 부분 확인/미확인**으로 유지한다. 환경변수를 변경하거나 운영 DB에 접속·쓰기하지 않았다.
+
+재개 방법은 서비스 프로젝트의 Supabase URL에서 ref 부분만 읽을 수 있는 비밀값 비노출 권한을 제공하거나, 각 서비스별 Production Supabase URL이 `grlfocvlfatuvphkyivd`인지 담당자가 대조해 알려주는 것이다. 전체 URL, API key, 토큰은 공유하지 않는다. 확인이 끝날 때까지 운영 환경을 대상으로 handoff/E2E 테스트를 하지 않는다.
