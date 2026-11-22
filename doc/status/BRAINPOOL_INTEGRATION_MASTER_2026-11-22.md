@@ -423,3 +423,37 @@ Supabase 프로젝트 목록과 데이터 inventory를 읽기 전용으로 확�
 - `hajunai` 삭제는 현재 용량 초과를 단독으로 해결하지 못할 가능성이 높다. 프로젝트 삭제를 선택한다면 project 이름·region·ref를 다시 대조하고, 삭제 전 6개 컨텍스트가 필요한지 결정한다. 보존을 선택한다면 access-control remediation은 별도 정책 설계와 승인 대상으로 둔다.
 
 > **다음 세션 시작점**: 사용자에게 `hajunai` 전체 프로젝트 영구 삭제 여부를 물어보고, 승인 전에는 어떠한 destructive action도 수행하지 않는다. 공개 저장소에는 위에 표시한 제한된 분석만 보관하고 보안 세부사항은 비공개로 유지한다.
+
+
+## 22. 2026-11-23 읽기 전용 검토: CoreHub facts 및 CoreRing room-create 경로
+
+점검 기준 HEAD: `brainpool-corehub` `932cd90`, `brainpool-clean` `41b293a`. 이 절은 저장소 코드 정적 검토 결과다. API 요청·테스트·DB 조회/쓰기·환경변수 열람·코드/설정 변경·PR 변경/병합·배포는 하지 않았다. 공개 저장소에 비밀값이나 DB 정책의 세부 내역을 기록하지 않는다.
+
+### CoreRing → CoreHub facts
+
+- CoreRing `app/api/brainpool/route.ts:108-123`은 요청 body `device_id`, 요청 `x-device-id`, 또는 임의 fallback 값을 `owner_key`로 facts 전송 객체에 넣는다. 이 경로에서 `x-owner-key`를 인증된 principal로 확인하는 동작은 관찰되지 않았다.
+- `lib/corehub.ts:38-44`의 POST helper는 JSON `Content-Type`만 설정해 `/api/corehub/facts`에 전송한다. 해당 호출 코드에는 Authorization/Bearer나 별도 인증 증명을 전달하는 부분이 보이지 않는다.
+- CoreHub `app/api/corehub/facts/route.js:10-15,27-37`은 GET/POST method를 분기하고 POST body의 필수 필드 존재 여부를 확인한 다음 DB 클라이언트를 불러온다. handler 및 `handlePost`에는 principal/token 인증을 확인하는 코드가 보이지 않는다. `:70-93`은 body의 `owner_key`를 포함한 Fact를 저장하고 후속 connection detection을 시작한다.
+- 같은 파일 `:96-120`의 GET은 `owner_key` query가 있으면 필터로 적용하지만 선택 사항이며, 없으면 해당 필터 없이 limit 범위의 facts를 조회한다. 코드 정적 관찰만으로 외부에서 실제 데이터가 반환되는지, Vercel 보호나 DB 정책이 추가 차단하는지 확인하지 못했다.
+- CoreHub `lib/supabase.ts:9-18`은 `SUPABASE_SERVICE_ROLE_KEY`가 있으면 이를 `SUPABASE_KEY`보다 우선해 서버 클라이언트에 사용한다. 이는 서버 환경 설정 시 service-role 권한이 적용될 수 있다는 코드 경로를 뜻하며, 실제 Production 환경변수 값이나 DB RLS/grants/policies를 확인한 것은 아니다.
+
+### CoreRing chat room 생성
+
+- `app/api/chat/route.ts:322-329`의 `action=create`는 `getPrincipal()`이나 room authorization 검사 호출 없이 요청 body의 `createdBy`를 사용하고, 없으면 `anonymous`를 지정한다. `isPublic`의 기본값은 `true`다.
+- `brain-engine/engines/chat/room.js:22-29`는 해당 `createdBy` 값을 `owner_device_id` 및 metadata에 저장한다. `brain-engine/connectors/storage.js:9-20`은 서버 환경의 `SUPABASE_SERVICE_ROLE_KEY`로 Supabase 클라이언트를 생성한다.
+- 이는 사용자 제공 식별자가 room 생성자의 값으로 저장될 수 있다는 정적 근거다. 이 검토로 실제 무단 room 생성, 공개 배포 도달성, 악용, 또는 DB에 대한 결과를 확인한 것은 아니다.
+
+### 배포 계층 증거와 미확인 사항
+
+- CoreRing `proxy.ts:4-14`는 API 요청에 trace ID를 설정·기록하고 그대로 진행시키며, 인증 검증 코드는 관찰되지 않았다. `next.config.ts`에는 이 검토 범위에서 rewrites 설정이 없고, `vercel.json`에는 cache-control header만 있다.
+- CoreHub 저장소에서는 이번에 확인한 범위에서 middleware/proxy 또는 `vercel.json` 파일을 찾지 못했고 `next.config.mjs`는 빈 설정이다. 이는 Vercel Dashboard의 deployment protection, access control, 환경 설정 또는 DB 권한 정책이 없다는 증거가 아니다. 해당 외부 설정은 확인하지 않았다.
+- CoreRing의 요청 header가 실제 사용자·기기에 cryptographic/session credential로 결속되는지, CoreHub facts endpoint에 플랫폼 차원의 보호가 있는지, facts schema의 RLS·grants·policies가 어떻게 설정돼 있는지는 미확인이다.
+
+### 우선 권고 및 안전 경계
+
+1. 우선순위 1: CoreHub facts POST/GET에 허용된 service-to-service 인증과 서버 측 owner scope 검증이 있는지, 배포 설정 및 실제 DB 권한을 비밀값을 노출하지 않는 읽기 전용 증거로 확인한다. `owner_key`는 식별자이지 인증 증명이 아니므로 요청 body/query 값만으로 인증·권한을 부여하지 않는 원칙을 유지한다.
+2. 우선순위 2: CoreRing room create의 공개 기본값, 허용된 creator principal, 생성 권한과 abuse-control 요구사항을 제품/보안 담당자와 결정한다. `createdBy` 또는 `deviceId`를 증명된 principal로 취급하지 않는다.
+3. 우선순위 3: 각 handler의 예상 인증 모델을 API 계약과 맞춘 뒤 수정안을 별도로 제안하고, 격리 환경에서 검증한다. 이 문서화 작업은 구현 변경·DB/RLS 변경·요청 replay·운영 테스트·배포를 승인하지 않는다.
+4. 실제 동작 확인이나 코드 수정은 별도 범위·승인 대상으로 남긴다. Hajunai DB에 대한 삭제·정지·보안 변경은 헤르메스 전체 DB 조사 결과와 별도 사용자 결정 전까지 계속 보류한다.
+
+> 본 절은 이전 §19 작업 보드 및 §20의 후속 검토 항목을 최신 정적 점검 결과로 보충한다. 정적 코드 관찰은 실제 노출·취약성 exploit의 입증과 동일하지 않으며, 플랫폼 보호 및 DB 정책 확인 전까지 영향은 미확정이다.
