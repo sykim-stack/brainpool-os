@@ -478,3 +478,14 @@ Supabase 프로젝트 목록과 데이터 inventory를 읽기 전용으로 확�
 4. 유사 이름의 보조 Vercel 프로젝트가 primary의 보호 수단이라고 가정하지 않는다. 해당 프로젝트의 배포·custom domain과 CoreHub API 경로 연결 여부는 미확인으로 남긴다.
 
 > 본 절은 읽기 전용 설정·catalog 결과이며 실제 endpoint 검증이나 완전한 인프라 보안 감사가 아니다. 공개 문서의 노출을 제한하고, 정확한 자산 식별정보 및 추가 대응은 소유자 승인 하의 비공개 운영 기록으로 관리한다.
+
+
+## 24. 2026-11-23 읽기 전용 확인: CoreHub Vercel 환경변수 메타데이터
+
+Vercel 재인증 후 primary CoreHub 프로젝트의 environment variable metadata를 조회했다. `decrypt=false`로 실행했으며 환경변수 값은 복호화·출력·저장하지 않았다. API 호출, 설정 변경 및 DB 작업도 없었다.
+
+- `NEXT_PUBLIC_SUPABASE_URL`과 `SUPABASE_SERVICE_ROLE_KEY` 항목이 Production 및 Preview target에 등록돼 있고, 둘 다 Vercel에서 sensitive 값으로 취급된다. 도구 응답의 value는 비어 있었고 `decrypted=false`였다.
+- 따라서 변수의 존재와 target만 확인됐다. 실제 Production Supabase URL/ref, service-role key 값의 유효성·실제 role, 이 URL이 앞서 catalog 점검한 DB를 가리키는지는 확인되지 않았다. 변수명만으로 실제 credential 권한을 입증하지 않는다.
+- 값 복호화는 요청하거나 수행하지 않았다. Production 환경변수의 ref와 credential 유형을 대조하려면 소유자가 비공개 운영 화면에서 Supabase URL의 project ref와 key 유형만 확인해 전달해야 한다. 전체 URL, API key, JWT, token은 공유하지 않는다.
+
+> 이 결과는 §23의 잠재 고위험/런타임 노출 미검증 판단을 해소하지 않는다. 배포 보호, handler 인증, DB 정책 또는 key를 변경하지 않았으며 운영 endpoint도 호출하지 않았다.
