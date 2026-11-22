@@ -457,3 +457,24 @@ Supabase 프로젝트 목록과 데이터 inventory를 읽기 전용으로 확�
 4. 실제 동작 확인이나 코드 수정은 별도 범위·승인 대상으로 남긴다. Hajunai DB에 대한 삭제·정지·보안 변경은 헤르메스 전체 DB 조사 결과와 별도 사용자 결정 전까지 계속 보류한다.
 
 > 본 절은 이전 §19 작업 보드 및 §20의 후속 검토 항목을 최신 정적 점검 결과로 보충한다. 정적 코드 관찰은 실제 노출·취약성 exploit의 입증과 동일하지 않으며, 플랫폼 보호 및 DB 정책 확인 전까지 영향은 미확정이다.
+
+
+## 23. 2026-11-23 읽기 전용 점검: CoreHub Production 보호 설정 및 facts DB 권한
+
+§22의 첫 번째 후속 권고에 따라 Vercel 프로젝트 설정과 통합 Supabase의 catalog metadata만 읽기 전용으로 확인했다. CoreHub Production deployment metadata는 `brainpool-corehub` 저장소 `main`의 `932cd90` commit을 가리키고 상태는 `READY`였다. API endpoint 호출, 환경변수 값 복호화/열람, DB row 조회, 쓰기, 설정 변경은 하지 않았다. 이 PUBLIC 문서에는 URL, deployment/project ID, Supabase ref 및 정책 SQL 전문을 싣지 않는다.
+
+### 확인된 보호·권한 상태
+
+- Vercel primary CoreHub Production project의 설정 조회 결과 password protection, SSO protection, trusted-IP protection이 모두 비활성으로 표시됐다. 별도의 유사 이름 프로젝트는 SSO protection 설정이 다르지만 custom domain은 예외로 표시되어, 해당 프로젝트가 같은 API 경로를 보호한다고 간주하지 않는다. 실제 네트워크/API 요청은 하지 않았으며, Vercel 외부 프록시나 추가 perimeter control의 존재는 확인하지 않았다.
+- Supabase catalog 조회 대상의 `corehub.facts`는 RLS enabled, FORCE RLS disabled였다. `anon` 및 `authenticated` 역할의 직접 SELECT/INSERT table privilege는 없고, `service_role`의 SELECT/INSERT privilege는 있었다. `anon`/`authenticated` 대상으로 모든 command에 적용되는 restrictive policy의 USING 및 WITH CHECK 표현식은 false였다. 이는 해당 DB 테이블에 대한 직접 클라이언트 접근이 차단됨을 보여 주지만 서버 API를 통한 접근 여부를 판정하지 않는다.
+- CoreHub 코드 `lib/supabase.ts`는 `SUPABASE_SERVICE_ROLE_KEY`가 설정돼 있으면 이를 우선 사용한다. service-role 권한은 일반 클라이언트의 RLS 차단과 다른 신뢰 경계다. Vercel Production에 실제 저장된 key 종류와 Supabase target ref는 이 점검에서 확인하지 않았으므로, 위 catalog 결과를 해당 배포의 런타임 DB로 확정 연결하지 않는다.
+- 배포 코드의 `GET /api/corehub/facts`는 `owner_key` query가 선택 사항이고, POST/GET handler에서 애플리케이션 principal 인증 확인은 코드상 보이지 않는다는 정적 관찰(§22)은 그대로 유효하다. Vercel 프로젝트의 보호 flag 비활성 결과와 합치면 노출 위험 우려가 커지지만, endpoint에 요청하지 않았으므로 외부 비인증 호출 가능성이나 실제 데이터 노출은 확인된 사실로 단정하지 않는다.
+
+### 판단 및 다음 단계 경계
+
+1. 현재 증거는 **Potential high risk / runtime exposure unverified**로 분류한다. DB의 직접 anon/authenticated 권한 부재만으로 API가 보호된다고 볼 수 없고, 반대로 공개 접근 가능성도 API 호출 없이 확정하지 않는다.
+2. 다음 단계는 코드/DB 변경이 아니라, 소유자가 비공개 운영 채널에서 Vercel Production의 Supabase URL ref와 key 종류를 비밀값 자체를 노출하지 않는 방식으로 확인하는 것이다. ref 비교는 앞서 확인한 통합 운영 ref와 일치 여부만 기록하고 전체 URL이나 key는 공유·문서화하지 않는다.
+3. 위험 완화 조치(배포 보호, handler 인증, service credential 교체, DB 권한/RLS 수정)는 별도 설계·승인 후 진행한다. 정책 없는 RLS 변경, 추측에 의한 key 교체, 운영 API 테스트, 운영 데이터 접근은 수행하지 않는다.
+4. 유사 이름의 보조 Vercel 프로젝트가 primary의 보호 수단이라고 가정하지 않는다. 해당 프로젝트의 배포·custom domain과 CoreHub API 경로 연결 여부는 미확인으로 남긴다.
+
+> 본 절은 읽기 전용 설정·catalog 결과이며 실제 endpoint 검증이나 완전한 인프라 보안 감사가 아니다. 공개 문서의 노출을 제한하고, 정확한 자산 식별정보 및 추가 대응은 소유자 승인 하의 비공개 운영 기록으로 관리한다.
