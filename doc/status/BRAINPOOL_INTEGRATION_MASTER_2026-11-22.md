@@ -375,7 +375,8 @@ Hajun Production 클라이언트 설정은 통합 프로젝트 `grlfocvlfatuvphk
 - [x] 409 `owner_link_required`의 코드상 기존 안내 확인. 오류는 연결을 거부하고 Owner 자동 생성·병합을 하지 않음. 별도 UI 변경은 없음.
 - [x] localStorage/Owner 관계 정적 점검. CoreNull의 legacy 정체성 보존 동작은 유지 대상. CoreRing `authHeaders()` 7개 호출 위치를 대응 API handler까지 추적했으며 세부 결과는 §20 참조. 외부 identity·배포계층·DB 정책은 미확인.
 - [~] CoreRing API route 정적 권한 검토 완료 (§20). Handoff 격리 검증은 계획 수립·별도 승인 후 진행. PR #2/#40은 그대로 두고 운영 E2E·병합·배포 금지.
-- [ ] Staging project가 현재 Supabase 프로젝트 목록에 존재하지 않는다고 단정할 수 없음. 별도 `hajunai` project를 staging으로 간주하지 않는다. 격리·비용·quota 재확인 및 승인 전에는 운영 DB 쓰기 테스트 금지.
+- [x] Supabase 목록에서 별도 `hajunai` active project를 확인하고 데이터 inventory를 읽기 전용으로 수행 (§21). 이를 staging으로 간주하지 않으며 삭제하지 않음.
+- [ ] 격리 staging project의 존재·비용·quota 상태는 별도 재확인 필요. 승인 전 운영 DB 쓰기 테스트 금지.
 
 ## 20. 2026-11-23 읽기 전용 점검: CoreRing `authHeaders()` API 경로
 
@@ -403,3 +404,22 @@ Hajun Production 클라이언트 설정은 통합 프로젝트 `grlfocvlfatuvphk
 - 발견 사항을 이유로 코드를 수정하거나 Owner/DB 데이터를 변경하지 않는다. 격리 환경 승인 전 handoff/E2E 실행, PR #2/#40 병합 및 Production 배포도 하지 않는다.
 
 > **다음 세션 시작점**: 우선 이 절의 세 후속 읽기 전용 검토 후보를 조사한다. 결과를 마스터 문서와 체크리스트에 누적하고, 실제 동작 검증이나 수정은 별도 승인 경계로 유지한다.
+
+## 21. 2026-11-23 읽기 전용 검토: 별도 Supabase `hajunai` 프로젝트
+
+Supabase 프로젝트 목록과 데이터 inventory를 읽기 전용으로 확인했다. `hajunai`는 `ap-southeast-2` 리전에 있는 `ACTIVE_HEALTHY` 별도 프로젝트이며 현재 staging으로 간주하지 않는다. 이 저장소는 **PUBLIC**이므로 프로젝트 ref, 세부 테이블 보안 설정, remediation 세부사항은 이 문서에 기록하지 않는다.
+
+### 데이터와 용량 관찰
+
+- 앱 테이블에는 프로젝트 항목 6건과 기술 컨텍스트 6건이 있다. 메시지, 문서, memory_store, Supabase Auth 사용자 및 Storage object는 각 0건이다. Supabase custom migration 목록과 Edge Function 목록은 비어 있다.
+- 컨텍스트는 단순 빈 placeholder가 아니라 여러 Brainpool 제품 모듈의 기술 요약·최근 작업 메모를 담는다. 최신 컨텍스트 갱신은 2026-03-07이다. 원문 본문은 공개 문서에 복사하지 않았다. 데이터가 적다는 이유만으로 고유한 프로젝트 기록이 불필요하다고 단정하지 않는다.
+- SQL의 `pg_database_size` 읽기 결과는 `hajunai` 약 12.55 MB, 통합 운영 프로젝트 `Jena-Voca-01` 약 514.60 MB였다. 화면에는 Free 사용량 530/500 MB가 보인다. 두 활성 프로젝트 합은 약 527.15 MB이므로 `hajunai`만 삭제해도 사용량 초과가 해소된다고 볼 수 없으며, paused project의 용량은 확인하지 않았다.
+- 기존 Hajun Production 확인 결과는 통합 ref `grlfocvlfatuvphkyivd`를 사용한다. 네 대상 저장소의 추적 가능한 파일에서 `hajunai` project ref 문자열은 찾지 못했다. 이 확인은 비추적 배포 설정이나 외부 사용자 사용 여부까지 배제하지 않는다.
+
+### 보안·삭제 경계
+
+- 별도 프로젝트에 critical Supabase 보안 advisory가 관찰됐다. 구체적 프로젝트 ref·테이블·정책과 수정 SQL은 이 공개 저장소에 노출하지 않고 소유자에게 별도로 전달한다. 어떠한 보안 설정도 변경하지 않았다.
+- 사용자는 해당 DB를 삭제 후보로 보도록 했으나, 이 검토 시점에는 영구 삭제·일시정지·데이터 수정·export/backup을 하지 않았다. 6개 컨텍스트의 보존 가치와 전체 프로젝트 삭제 범위를 명확히 한 뒤 사용자 확인을 받아야 한다.
+- `hajunai` 삭제는 현재 용량 초과를 단독으로 해결하지 못할 가능성이 높다. 프로젝트 삭제를 선택한다면 project 이름·region·ref를 다시 대조하고, 삭제 전 6개 컨텍스트가 필요한지 결정한다. 보존을 선택한다면 access-control remediation은 별도 정책 설계와 승인 대상으로 둔다.
+
+> **다음 세션 시작점**: 사용자에게 `hajunai` 전체 프로젝트 영구 삭제 여부를 물어보고, 승인 전에는 어떠한 destructive action도 수행하지 않는다. 공개 저장소에는 위에 표시한 제한된 분석만 보관하고 보안 세부사항은 비공개로 유지한다.
