@@ -294,3 +294,11 @@ CREATE TABLE IF NOT EXISTS corehub.auth_owner_links (
 | CoreRing PR #40 | `main` ← `feat/corering-handoff-receive`, head `5247763aa2c448b54ffdd1e76c3b9458eb29896e`, OPEN | brainpool-clean Vercel, corering Vercel 및 Preview Comments 성공 | 체크 성공은 배포 준비 신호일 뿐 인증/handoff 동작 검증이 아님. 병합·Production 배포는 하지 않음. |
 
 체크 정보 출처: [Hajun PR #2](https://github.com/sykim-stack/hajuncore-app/pull/2), [CoreRing PR #40](https://github.com/sykim-stack/brainpool-clean/pull/40). 확인 시각은 2026-11-22 23:52 KST다. 다음 우선 작업은 Hajun/CoreHub Production 환경이 같은 Supabase project ref를 사용하는지 비밀값 노출 없이 확인하는 것이다. 이 값은 GitHub 공개 PR 정보만으로 확정할 수 없으며, Vercel/Supabase 환경 설정을 읽을 권한이 확인되기 전까지 추정하거나 변경하지 않는다.
+
+## 13. 2026-11-22 후속 진행 기록: Production project ref 대조 보류
+
+추천 순서의 다음 단계로 Hajun/CoreHub Production이 같은 Supabase project ref를 사용하는지 확인하려 했으나, 현재 세션에는 Vercel 또는 Supabase 환경 설정을 읽을 수 있는 연결이 확인되지 않았다. GitHub 저장소의 공개 파일만으로 Production에 실제 저장된 URL/ref를 확정할 수 없으므로 이 항목은 **미확인/차단** 상태로 둔다.
+
+- 환경변수 값·비밀키를 요청하거나 출력하지 않았고, 설정을 변경하지 않았다.
+- 재개 조건: Vercel/Supabase 읽기 전용 접근을 연결하거나, 각 프로젝트의 Supabase URL에서 project ref 부분만 사용자가 제공한다. 키·토큰·전체 환경변수 값은 공유하지 않는다.
+- 다음 확인: Hajun 및 CoreHub Production ref 일치 여부를 대조하고, CoreNull/CoreRing도 같은 운영 DB를 의도하는지 구성 기준과 대조한다. 불일치가 발견되어도 이 문서화 작업의 범위에서는 변경하지 않고 별도 승인 대상으로 기록한다.
