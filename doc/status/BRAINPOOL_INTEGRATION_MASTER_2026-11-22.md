@@ -519,3 +519,38 @@ Vercel 재인증 후 primary CoreHub 프로젝트의 environment variable metada
 4. 위 확인 후에도 삭제를 원하면 프로젝트 이름·ref·region 및 전체 프로젝트 삭제 범위를 다시 제시하고, 사용자의 명시적 최종 승인을 받기 전까지 삭제하지 않는다.
 
 > 본 절은 헤르메스 보고서를 삭제 승인으로 전환하지 않는다. 현재 최선의 상태는 Hajunai를 보류하고, 용량 원인과 데이터 보존 필요를 확인한 뒤 별도 결정을 받는 것이다.
+
+## 26. 2026-11-23 설계 제안 검토: 메시지 계보와 현재 구현도
+
+사용자가 제시한 “메시지 진화 프레임워크”는 **설계 의도**로 취급한다. 아래는 통합 Supabase metadata 및 집계 결과와 저장소 코드의 비교이며, 원문 메시지·payload 값·사용자 식별값은 조회하거나 기록하지 않았다. DB 쓰기와 앱 실행도 없었다. 코드 기준 HEAD는 CoreNull `2888653`, CoreHub `932cd90`이다.
+
+### 프레임워크 수정 권고
+
+1. “M0는 새로 생성되지 않는다”는 문구는 **하나의 계보 내에서 M0 원본을 최초 1회 정하고 이후 파생 생성이 그 원본을 재작성·대체하지 않는다**는 뜻으로 좁혀 쓴다. 새로 입력된 독립 원천 이벤트는 별도 M0′가 될 수 있다. “절대 멸실되지 않음”은 개념적 선언만으로 보장되지 않으므로 immutable storage, 보존기간, 백업·복구 검증을 별도 요건으로 둔다.
+2. M0→M1→…→Mn을 단일 선형 체인으로만 가정하지 않는다. 여러 원천 메시지·관계·해석이 한 결과에 합쳐질 수 있으므로 실제 lineage는 여러 parent를 갖는 DAG일 수 있다. 각 edge에 관계 유형(derived-from, summarizes, translates, references 등), 출처 ID, 근거 수준 및 version을 둔다.
+3. 제시된 4개 열은 유용하지만 다음처럼 분리·확장한다: **물리 저장 위치**(project/schema/table), **도메인 데이터 역할 및 canonical ID 의미**, **생성/변환 시스템과 코드 버전**, **권위 있는 writer·승인/소유자**, **원본·파생 lineage edge와 강제 방식(FK/배열/payload/코드 규칙)**, **승계·보존·삭제 가능 조건과 immutability enforcement**. 생성 시스템은 DB 소유자나 권한 주체와 동일하지 않다.
+4. 중간 데이터 정리는 “새 세대가 필요한 정보를 받았다”는 주장만으로 가능하지 않다. lineage 폐쇄성, 재생성 가능성, 원본 보존, downstream dependency, 보존·복구 기준을 사람 승인으로 확인한 뒤 수행한다.
+5. 반복 사이클에서 “새로운 M0”는 새 독립 원천 이벤트가 있을 때만 만든다. 기존 원본의 재해석·요약은 새 M0가 아니라 기존 계보 아래의 새 derived version으로 연결한다.
+
+### 확인된 스키마·집계 사실
+
+- `public.hajunai_conversations`에는 `original_message`, `summary`, `source_message_ids`(UUID 배열), `derived_version`, `derived_by`, `derived_at` 등 계보/파생 후보 필드가 있다. 560행 중 `source_message_ids`가 비어 있지 않은 행은 1개, 배열 원소는 총 1개였다. 그 ID는 현재 `public.messages.id` 및 `public.hajun_messages.id`와 일치하지 않았고, 이 배열 컬럼에 대한 FK도 없다. 그러므로 필드명만으로 실제 M0 연결이나 560건의 파생 관계를 입증하지 않는다.
+- `public.hajun_messages` 224행 중 `ref_ids`가 있는 행은 97개(원소 325개)이며, 이 원소 중 현재 `public.hajunai_conversations.id`와 일치한 것은 0개였다. 스키마의 FK는 `room_id`를 방 테이블에 연결할 뿐 메시지 세대/원본 관계를 강제하지 않는다.
+- `public.tb_trans_logs.message_id`는 값이 있는 8행 모두 현재 `public.messages.id`와 일치했다. 이는 해당 두 테이블 사이의 실제 ID 중첩을 보여 주지만, `hajun_messages` 또는 `hajunai_conversations`를 원본으로 삼는다는 뜻은 아니다.
+- `public.corenull_message_outbox`는 10행이며 모두 `sent` 상태였고, 10개 `message_id`가 `public.messages.id`와 일치했다. DB FK도 outbox의 `message_id`를 `public.messages.id`에 연결한다. CoreNull 코드 `app/api/corenull/posts/route.js:148-257`는 `public.messages` INSERT 뒤 post/fruit의 ID를 outbox에 전달하고, `lib/corehubOutbox.js:19-48`은 idempotency key를 만든다. 같은 route의 PATCH 처리(`:376-446`)는 기존 메시지 본문 edit, soft-delete, rebirth를 허용하며 rebirth는 `meta.reborn_from`으로 기존 ID를 기록한다. 이는 저장소 코드상 의도이지 배포된 운영 경로의 실동작이나 M0 불변성 증명은 아니다.
+- `corehub.connections` 48행의 `fact_ids` 배열은 총 254개 ID를 포함했고, 모두 현재 `corehub.facts.id`와 일치했다. FK 제약은 없지만 CoreHub 내부의 사실→관계 참조는 데이터상 연결돼 있었다.
+- `corenull.posts.parent_id`에는 같은 posts 테이블을 가리키는 self-FK가 있다. 이는 게시물 간 부모 관계의 스키마 근거이지 M0 계보나 CoreHub 관계 연결의 증거는 아니다.
+- `public.house_snapshots`는 스키마에 `source_message_ids`, `derived_version`, `derived_by`, `derived_at`을 갖지만 현재 행 수는 0이다. CoreNull `app/api/corenull/snapshots/route.js:1-4,73-83,139-149`는 메시지를 모아 source ID를 저장하는 snapshot 설계를 표현한다. 이는 코드 의도와 빈 저장공간의 확인이지, 운영에서 snapshot 세대가 반복 생성됐다는 증거는 아니다.
+- `corehub.facts` 중 `source='CoreNull'`은 38행이다. 12행은 payload에 `message_id`, 6행은 `post_id`, 4행은 `parent_id` 키가 있었다. 세 후보 key 중 하나 이상이 현재 `public.messages.id`와 일치하는 서로 다른 fact 행은 12개였다. 같은 후보 UUID를 `corenull.posts.id`와 대조했을 때 일치한 것은 없었다. 따라서 현재 관측은 CoreNull facts가 `public.messages` 계열을 참조하는 경로를 일부 보여 주지만, 새 `corenull.posts` 테이블을 직접 승계한다는 증거는 아니다. `corehub.facts`에는 이 cross-system 관계를 강제하는 FK가 없다.
+### 불변성과 시간 검증
+
+- `hajun_messages`는 RLS가 켜져 있으나 사용자 trigger는 0개이고 policy도 0개였다. `service_role`에는 UPDATE와 INSERT 권한이 있다. 따라서 “UPDATE 금지, append만”이 요구사항 또는 운영 관습일 수는 있지만, 현재 확인한 DB 구조상 privileged service-role 쓰기까지 막는 append-only 불변조건은 구현돼 있지 않다. 권한·정책을 바꾸지는 않았다.
+- `hajun_messages`의 생성시각은 2026-08-31 09:51:59 UTC부터 2026-11-22 11:37:21 UTC까지였다. migration history의 `enable_corehub_auth_tables_rls` 버전 값은 `20261122135209`이며 별도 applied-at 컬럼은 없다. version 값을 같은 시간대로 해석하면 최신 메시지보다 뒤지만, 시간대·실제 적용시각 기록이 없고 해당 migration 목적도 auth tables RLS이므로 메시지 생성과의 인과관계는 확인되지 않았다.
+
+### 구현도 판단 및 가장 큰 미확인점
+
+현재 DB/코드에는 **계보 후보 필드와 일부 관측 가능한 연결**(CoreNull message→outbox의 ID 연결, CoreNull facts payload의 일부 ID 교집합, CoreHub facts→connections)이 존재한다. 다만 이들이 연속된 완전한 lineage임은 확인되지 않았다. `hajunai_conversations`와 `hajun_messages` 간 원본 연결은 현재 참조 집계에서 입증되지 않았고, snapshot 테이블은 비어 있으며, `hajun_messages` append-only는 privileged 쓰기에서 강제되지 않는다. CoreNull API 코드가 `public.messages`의 본문 수정·soft-delete·rebirth를 제공하므로, 이를 M0로 지정한다면 현재 확인한 코드만으로는 불변 원본 요건을 충족한다고 볼 수 없다(배포된 운영 동작은 별도 미확인). 따라서 “M0→M1→…→Mn 반복 진화”가 전체 시스템에서 이미 구현됐다는 평가는 **미확인**이며, 일부 구성요소가 부분 구현된 상태로 보는 것이 타당하다.
+
+가장 먼저 사람의 결정이 필요한 정의는 **canonical M0가 어느 도메인 객체인지**다: `public.messages`, `corenull.posts`, `public.hajun_messages`, 또는 새 원천 이벤트를 의미하는지 확정해야 한다. 그다음 `hajunai_conversations.original_message`와 `source_message_ids`의 계약, 여러 source를 묶는 lineage DAG, 불변·보존·복구 책임을 문서화해야 한다. 현 단계에서 데이터 이동·정리·schema 변경은 하지 않는다.
+
+> 이 검토는 aggregate와 schema metadata만 사용했으며 실제 메시지 텍스트를 읽지 않았다. 다수 행 수는 SQL COUNT로 확인했고, 모든 매칭 결과는 해당 시점 DB의 ID 존재 여부만 뜻한다. 전체 역사적 lineage나 deployed code 실행 여부를 증명하지 않는다.
