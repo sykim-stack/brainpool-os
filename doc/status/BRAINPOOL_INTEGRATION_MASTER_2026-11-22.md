@@ -350,3 +350,29 @@ Hajun Production 클라이언트 설정은 통합 프로젝트 `grlfocvlfatuvphk
 **상태: 권고안, 코드 변경 없음.** `localStorage.corenull_owner_key`는 사용자 브라우저 상태에 따라 달라질 수 있으므로 인증 또는 권한의 근거로 사용하지 않는다. 인증된 ticket 결과와 서버의 기존 identity 매핑을 권한 판단의 기준으로 유지하고, 로컬 값이 그 결과와 다르면 조용히 권한에 채택하지 않는다. 기존 앱 기능상 로컬 값의 동기화·삭제가 필요하더라도 영향 범위를 먼저 확인하고 별도 승인 후 변경한다. 로그인 전 일반 사용자 흐름에서 계정 선택이나 Owner 복구를 요구하는 UI를 추가하지 않는다.
 
 다음 담당자는 먼저 기존 코드가 이 원칙과 다른 권한 판단을 하는지 읽기 전용으로 점검한다. 발견 사항은 파일/경로와 근거를 적되, 데이터 정리·Owner 매핑 변경은 수행하지 않는다.
+
+## 18. 2026-11-23 읽기 전용 코드 점검: Owner identity 경로
+
+점검 기준 HEAD: `hajuncore-app` `4779ad4`, `brainpool-clean` `41b293a`, `brainpool-corenull` `2888653`, `brainpool-corehub` `932cd90`. 코드는 읽기만 했고 테스트, DB 조회/쓰기, 브랜치 수정은 하지 않았다.
+
+- Hajun 코드에서 `corenull_owner_key` localStorage 사용은 찾지 못했다.
+- CoreNull `lib/ownerKey.ts`는 기존 `corenull_owner_key`를 우선 반환하고, 값이 없을 때 legacy `corenull_device_id`를 기존 사용자 호환 목적으로 승격한다. 새 UUID 생성은 별도 `createOwnerKey()`에서 명시적으로 호출될 때만 일어난다. 이 legacy 동작은 BRAINPOOL 기존 소유자 식별 체계와 데이터 보존에 연결되므로 별도 검토·승인 없이 변경하지 않는다.
+- CoreNull `lib/identity/resolveCoreNullOwnerFromToken.mjs`는 인증된 Supabase `auth_user_id`를 기존 `corenull_owner_identities`에 조회한다. 매핑이 없으면 `owner_link_required`, 조회 오류면 `owner_mapping_unavailable`로 실패한다. handoff 화면 `app/auth/handoff/page.tsx`는 오류 응답에서만 안내를 표시하고, 성공 응답에 기존 `owner_key`가 있을 때 `setOwnerKey()`를 호출한다. 따라서 확인된 코드 경로상 409 처리에서 Owner 값을 저장하지 않는다. 메시지는 Owner ID나 다른 계정의 세부 식별자를 포함하지 않으며, 새 Owner 생성/자동 병합을 하지 않았다고 안내한다.
+- CoreHub `lib/corehub/resolveOwnerKeysFromBearer.mjs`는 client-supplied `owner_key`를 신뢰하지 않는다고 명시하고, 인증 principal의 `auth_user_id`로 활성 `auth_owner_links`를 조회한다. `app/api/corehub/opportunities/route.js`도 Owner 필드 클레임을 거부하고 Bearer/session principal에서 scope를 구한다.
+- 반면 CoreRing `app/page.tsx`는 `localStorage.corenull_owner_key`를 읽어 `x-owner-key` 요청 헤더로 전달한다. 이것만으로 실제 서버 측 권한 우회가 확인된 것은 아니다. 발견된 CoreHub opportunities 경로는 owner scope를 인증 principal에서 resolve하지만, CoreRing의 모든 API route가 같은 검증을 하는지 아직 route-by-route로 확인하지 않았다.
+
+### 다음 작업과 변경 금지선
+
+1. CoreRing에서 `authHeaders()`가 호출되는 각 API 경로를 대응 서버 라우트까지 추적한다. 각 라우트가 identity·권한을 서버에서 검증하는지 기록한다.
+2. 인증 검증 없이 `x-owner-key`, query/body의 `owner_key`, 또는 device ID만으로 Owner 범위 데이터를 반환·수정하는 경로가 있는지 확인한다. 발견해도 현 task에서는 수정하지 않고 파일/경로·근거·영향 범위를 정리해 별도 승인 대상으로 제시한다.
+3. CoreNull의 legacy device→Owner 호환, existing Owner mapping 및 user data는 삭제·병합·재할당하지 않는다.
+
+## 19. 후속 작업 보드: 2026-11-23 기준
+
+- [x] Hajun PR #2와 CoreRing PR #40의 상태 및 CI를 읽기 전용 확인. 둘 다 OPEN이며 병합/배포 없음.
+- [~] Hajun/CoreHub/CoreNull/CoreRing Supabase ref 대조. Hajun Production 클라이언트 `grlfocvlfatuvphkyivd` 확인. CoreHub/CoreNull/CoreRing Vercel Production URL 변수는 민감 값으로 응답되지 않아 완전한 일치 여부 미확인.
+- [x] 로그인 제품 방향 확정. Google OAuth/access token은 연결 검증용 내부·임시 수단이며, 일반 사용자 기본 경험에 로그인·계정 생성을 추가하지 않음.
+- [x] 409 `owner_link_required`의 코드상 기존 안내 확인. 오류는 연결을 거부하고 Owner 자동 생성·병합을 하지 않음. 별도 UI 변경은 없음.
+- [~] localStorage/Owner 관계 조사. CoreNull의 legacy 정체성 보존 동작은 유지 대상. CoreRing에서 localStorage owner key를 header로 전달하는 경로는 API별 서버 권한검증 추가 점검 필요.
+- [ ] CoreRing handoff 격리 검증 계획·API route 권한 검토 완료 후 별도 승인. PR #2/#40은 그대로 두고 운영 E2E·병합·배포 금지.
+- [ ] Staging project가 현재 Supabase 프로젝트 목록에 존재하지 않는다고 단정할 수 없음. 별도 `hajunai` project를 staging으로 간주하지 않는다. 격리·비용·quota 재확인 및 승인 전에는 운영 DB 쓰기 테스트 금지.
