@@ -243,5 +243,43 @@ CREATE TABLE IF NOT EXISTS corehub.auth_owner_links (
 > **위 미확인 항목은 다음 작업 이어가기 전, 담당자가 확인 후 체크리스트에 반영하거나 보류 결정**해야 합니다.  
 > **기존 원본 문서 수정·삭제, 설계 임의 변경은 금지**됩니다.
 
+## 11. 2026-11-22 보충 기록: 확인 결과와 승인 경계
+
+이 절은 2026-11-22 기준의 후속 확인 결과다. 위 본문은 당시 작업 snapshot으로 보존하며, 아래 현재 상태가 충돌하는 경우 최신 날짜가 명시된 기록을 기준으로 한다. 별도 원본 status 문서들은 수정하지 않았다.
+
+### 11-1. 통합 DB와 CoreHub 보안
+
+- **사용자 확인**: 현재 서비스는 HajunAI DB로 사용되던 DB를 통합한 **단일 운영 DB**를 사용한다. 별도 `hajunai` Supabase 목록 항목을 staging이나 별도 운영 데이터베이스로 간주하지 않는다. Path S 자료는 통합 Supabase 프로젝트 ref를 `grlfocvlfatuvphkyivd`로 적고 있다.
+- 공유 DB의 handoff 호출이나 테스트 쓰기는 금지되어 있어 실행하지 않았다. 기존 owner identity 값은 열람하거나 기록하지 않았다.
+- 승인된 migration `enable_corehub_auth_tables_rls`를 Supabase 프로젝트 `grlfocvlfatuvphkyivd`에 적용했다. `corehub.auth_handoffs`, `corehub.auth_sessions`, `corehub.auth_owner_links`에 RLS만 활성화했고 policy는 추가하지 않았으며 FORCE RLS도 적용하지 않았다.
+- 사후 검증: 세 테이블 모두 RLS=true, FORCE RLS=false, policy 0개. `anon`/`authenticated` direct table grants는 없고 `service_role`은 RLS bypass와 필요한 권한을 보유한다. handoffs: INSERT/SELECT/UPDATE, sessions: INSERT/SELECT, owner_links: SELECT. 이는 권한 구조 확인이며 live handoff 성공 테스트는 아니다.
+- 별도 Supabase inventory에는 `hajunai` 이름의 프로젝트 리소스와 `public.projects`, `public.contexts`, `public.messages` RLS 관련 advisory가 관찰됐다. 그 리소스와 현재 단일 운영 DB의 관계는 확인되지 않았다. 사용자 승인 없이 그 프로젝트에 staging 쓰기나 보안 변경을 하지 않는다.
+
+### 11-2. 브랜치 및 PR 최신 상태
+
+| 항목 | 2026-11-22 확인 상태 | 경계 |
+|---|---|---|
+| Hajun PR #2 | OPEN. `mes/integration-1` → `feat/corering-handoff-button` (`147f3573ea59eaf9388c4f07c9db71c18ddf9c1e`). | 기존 브랜치를 유지하며 PR base/head는 변경하지 않았다. |
+| Hajun 인증 전용 브랜치 | `feat/auth-handoff-main`, base `main` (`4779ad4a41e13ce7ffeee56cb4bbe4cfdbf0ec68`), commit `3eb1fc144831e95f47760e84c3b78005548b808e`. | CoreNull/CoreRing 버튼, Sidebar, `lib/supabaseBrowser.ts` 네 경로만 포함. MES 변경 없음. 새 PR은 만들지 않았다. |
+| CoreRing PR #40 | OPEN, `main` base 유지, head `feat/corering-handoff-receive` (`5247763aa2c448b54ffdd1e76c3b9458eb29896e`). | merge 또는 production deploy 없음. |
+
+인증 전용 브랜치에서 `git diff --check`, TypeScript no-emit, 변경 파일 ESLint, Next.js production build를 통과했다. Build는 Supabase 환경변수를 제공하지 않은 채 실행됐고, shared DB 연결·handoff 호출·E2E 쓰기는 없었다. 기존 Hajun PR #2와 CoreRing PR #40은 병합하지 않았다.
+
+브랜치 push 뒤 Vercel이 `feat/auth-handoff-main`의 Preview deployment `dpl_5Bxq6f5SsmmLpJ8hNSAjhPz5Ahmw`를 자동 생성했고 상태는 READY다. 사용자는 Preview 유지와 삭제 금지를 확인했다. Preview 로그인, E2E 및 추가 테스트를 하지 않는다. Production deployment는 실행하지 않았다. Preview 환경이 Production과 분리되었다고 확인되지 않았으므로 테스트 환경으로 사용하지 않는다.
+
+### 11-3. Staging 비용·조건
+
+- Supabase 조직 `mind world`의 현재 plan은 Free이고, 새 project 비용 조회값은 월 `$0`이었다. 단, 공식 Free plan은 Owner/Admin으로 속한 조직 전반에 active project 2개 한도가 있다. 현재 조직 inventory에 active project 두 개가 표시되어 무료 슬롯이 없을 가능성이 있으므로, `$0` 견적만으로 새 프로젝트 생성 가능 여부나 전체 비용을 확정하지 않는다.
+- Free plan의 포함량은 DB 500 MB, egress 5 GB, storage 1 GB, 월 50,000 MAU이며, 비활성 Free project는 1주 뒤 pause될 수 있다. Pro는 월 $25부터이고 $10/month compute credit을 포함한다. 사용량 초과, 추가 compute 및 선택한 add-on은 별도 조건으로 과금될 수 있다.
+- 현재 staging project는 생성하지 않았다. 새 프로젝트 생성 전 조직 quota와 비용을 다시 조회해 사용자에게 보고하고 별도 명시 승인을 받아야 한다. Google OAuth와 사전 존재하는 Owner 매핑 테스트도 격리 staging에서만 수행한다. 새 Owner 자동 생성/병합은 금지한다.
+- 공식 참고: [Supabase Pricing](https://supabase.com/pricing), [Billing](https://supabase.com/docs/guides/platform/billing-on-supabase), [Billing FAQ](https://supabase.com/docs/guides/platform/billing-faq), [Cost Control](https://supabase.com/docs/guides/platform/cost-control), [Compute and Disk](https://supabase.com/docs/guides/platform/compute-and-disk).
+
+### 11-4. 다음 단계와 승인 경계
+
+1. 마스터 문서 기록 이후에도 staging project 생성은 보류한다. quota·예상 비용을 재확인해 사용자 승인을 받은 뒤에만 생성한다.
+2. staging이 승인·생성되면 OAuth callback/client 설정, 이미 매핑된 테스트 계정, Vercel Preview의 staging 격리를 확인한다. 그 전에는 Preview 로그인·handoff·E2E를 실행하지 않는다.
+3. 격리 staging에서 CoreNull E2E를 먼저, 이어 CoreRing E2E를 수행한다. 공유 운영 DB에는 handoff 또는 테스트 쓰기를 하지 않는다.
+4. PR #2와 PR #40은 현재 상태를 유지한다. 병합과 Production 배포는 별도 승인 후 CoreHub → CoreNull/CoreRing → Hajun 순서로만 진행한다.
+
 ---
 *본 문서는 BRAINPOOL 통합연결 작업의 마스터 기준 문서이며, 새로운 설계 추측이나 원본 문서 변경을 목적으로 하지 않습니다. 다음 작업자는 '미확인 항목'을 참조하여 진행 계획을 수립하시기 바랍니다.*
