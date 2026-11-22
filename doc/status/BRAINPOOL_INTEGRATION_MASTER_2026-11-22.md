@@ -373,6 +373,33 @@ Hajun Production 클라이언트 설정은 통합 프로젝트 `grlfocvlfatuvphk
 - [~] Hajun/CoreHub/CoreNull/CoreRing Supabase ref 대조. Hajun Production 클라이언트 `grlfocvlfatuvphkyivd` 확인. CoreHub/CoreNull/CoreRing Vercel Production URL 변수는 민감 값으로 응답되지 않아 완전한 일치 여부 미확인.
 - [x] 로그인 제품 방향 확정. Google OAuth/access token은 연결 검증용 내부·임시 수단이며, 일반 사용자 기본 경험에 로그인·계정 생성을 추가하지 않음.
 - [x] 409 `owner_link_required`의 코드상 기존 안내 확인. 오류는 연결을 거부하고 Owner 자동 생성·병합을 하지 않음. 별도 UI 변경은 없음.
-- [~] localStorage/Owner 관계 조사. CoreNull의 legacy 정체성 보존 동작은 유지 대상. CoreRing에서 localStorage owner key를 header로 전달하는 경로는 API별 서버 권한검증 추가 점검 필요.
-- [ ] CoreRing handoff 격리 검증 계획·API route 권한 검토 완료 후 별도 승인. PR #2/#40은 그대로 두고 운영 E2E·병합·배포 금지.
+- [x] localStorage/Owner 관계 정적 점검. CoreNull의 legacy 정체성 보존 동작은 유지 대상. CoreRing `authHeaders()` 7개 호출 위치를 대응 API handler까지 추적했으며 세부 결과는 §20 참조. 외부 identity·배포계층·DB 정책은 미확인.
+- [~] CoreRing API route 정적 권한 검토 완료 (§20). Handoff 격리 검증은 계획 수립·별도 승인 후 진행. PR #2/#40은 그대로 두고 운영 E2E·병합·배포 금지.
 - [ ] Staging project가 현재 Supabase 프로젝트 목록에 존재하지 않는다고 단정할 수 없음. 별도 `hajunai` project를 staging으로 간주하지 않는다. 격리·비용·quota 재확인 및 승인 전에는 운영 DB 쓰기 테스트 금지.
+
+## 20. 2026-11-23 읽기 전용 점검: CoreRing `authHeaders()` API 경로
+
+`brainpool-clean` 정적 코드 점검본 기준 커밋은 `41b293a`다. `app/page.tsx`의 `authHeaders()` 사용 위치 7곳을 각각 대응하는 API handler까지 추적했다. 저장소 코드만 읽었으며 네트워크/API 요청, 테스트, Supabase 조회·쓰기, 코드 수정, PR 변경·병합 및 배포는 하지 않았다.
+
+### 호출 경로별 관찰
+
+| UI 호출 | 서버 경로 | 정적 코드에서 확인한 처리 |
+|---|---|---|
+| `app/page.tsx:241` | `GET /api/chat/rooms` | `app/api/chat/rooms/route.ts:4-17`는 요청 identity를 읽거나 검증하지 않고 공개 방 목록을 조회한다. `x-device-id` 및 선택적 `x-owner-key`가 전송돼도 이 handler에서는 권한 근거로 사용되지 않는다. |
+| `app/page.tsx:303` | `POST /api/chat`, `action=poll` | `route.ts:295-302`에서 principal과 방 읽기 검사를 요구한다. `lib/security/principal.ts`는 caller-provided header의 형식만 검사한다. `lib/security/room-access.ts`는 비공개 방에서 DB 소유자/참여자와 대조하고, 공개 방은 유효 형식 principal의 읽기를 허용한다. |
+| `app/page.tsx:364` | `POST /api/chat`, `action=send` | body `userId`와 principal 식별자를 비교하고 방 쓰기 권한을 검사한다. 공개 방은 비서비스 principal의 쓰기를 허용하며, 비공개 방은 DB 소유자/참여자 확인을 거친다. principal header 값이 실제 사용자/기기에 결속됐는지는 이 handler와 helper의 형식 검사만으로 확인되지 않는다. |
+| `app/page.tsx:389` | `POST /api/brainpool` | 번역 경로에서 사용자 인증·소유권 검증은 코드상 확인되지 않았다. body `device_id` 또는 `x-device-id`가 CoreHub fact의 `owner_key`로 전달될 수 있고, `x-owner-key`는 이 handler에서 검증되지 않는다. CoreHub 수신 측의 검증·권한 효과는 미확인이다. |
+| `app/page.tsx:487` | `DELETE /api/chat/rooms/{roomId}` | principal 식별자를 DB `owner_device_id`와 비교하고, 엔진도 동일성을 확인한다. 그러나 `deviceId`는 caller-provided header에서 형식 검사된 값이다. `x-owner-key`는 이 삭제 경로의 owner 비교를 대체하지 않는다. |
+| `app/page.tsx:578` | `POST /api/chat`, `action=clear` | 이 handler에는 `clear` 분기가 없어 `unknown action`으로 처리되며 삭제 handler를 호출하지 않는다. 별도 구현된 clear 경로는 `PATCH /api/chat/rooms/{roomId}`이고, DB 소유자 대조와 엔진의 동일성 확인을 수행한다. |
+| `app/page.tsx:611` | `POST /api/chat`, `action=create` | create 분기는 `getPrincipal()` 또는 권한 검사를 호출하지 않고 body의 `createdBy`를 `CREATE_ROOM`에 전달한다. 이 분기에서 요청 identity를 인증 근거로 검증한다는 코드는 확인되지 않았다. 실제 저장 효과 및 배포 환경의 외부 보호 여부는 미검증이다. |
+
+`authHeaders()`는 `localStorage.corenull_owner_key` 값이 있으면 `x-owner-key`로, 클라이언트의 `deviceId`는 `x-device-id`로 전송한다 (`app/page.tsx:70-85`). `x-owner-key`가 전송된다는 사실 자체는 인증이나 권한 우회 증거가 아니다. 여러 채팅 경로의 principal은 caller-provided header를 바탕으로 구성되고 형식 검사를 거치지만, 저장소의 이 코드만으로 session/token 또는 cryptographic proof와의 결속은 확인되지 않았다.
+
+### 결론과 다음 담당자 경계
+
+- 이 정적 검토만으로 실제 무단 접근·삭제·데이터 노출, 운영 환경의 악용 가능성 또는 확정된 취약성을 주장하지 않는다. 공개 방에 대한 접근은 관찰된 코드 정책이며, 비공개 방·삭제 경로에는 저장된 소유자/참여자 비교가 있다.
+- 반면 공개 방 목록, `/api/brainpool` 번역 및 chat `create` 경로에서는 각 handler가 요청 identity를 인증 근거로 검증하지 않거나 사용하지 않는 코드가 확인됐다. 특히 create의 `createdBy`는 요청 body에서 직접 전달된다. 이 발견만으로 생성의 실질적 부수효과나 배포 노출을 확정하지 않는다.
+- 후속 읽기 전용 검토 후보: 배포 middleware/proxy와 identity 헤더 발급·전달 경로, 관련 DB RLS/정책, CoreHub facts 수신 handler 및 `CREATE_ROOM`의 저장·부수효과. 해당 검토 전까지 영향 범위는 미확인으로 둔다.
+- 발견 사항을 이유로 코드를 수정하거나 Owner/DB 데이터를 변경하지 않는다. 격리 환경 승인 전 handoff/E2E 실행, PR #2/#40 병합 및 Production 배포도 하지 않는다.
+
+> **다음 세션 시작점**: 우선 이 절의 세 후속 읽기 전용 검토 후보를 조사한다. 결과를 마스터 문서와 체크리스트에 누적하고, 실제 동작 검증이나 수정은 별도 승인 경계로 유지한다.
