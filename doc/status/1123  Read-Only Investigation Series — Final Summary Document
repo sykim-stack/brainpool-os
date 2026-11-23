@@ -1,111 +1,422 @@
-BRAINPOOL Read-Only Investigation Series — Final Summary Document
-(13개 파일 기반 종합 조사 결과)
-작업 개요
-기간: 2026-11-23 기준 연속 조사
-파일 수: 13개 파일 기반 종합 조사
-원칙: Read-only 조사만 수행 (DB 쓰기, 코드 수정, PR·배포 금지)
-기준 마스터: BRAINPOOL_INTEGRATION_MASTER_2026-11-22.md (§§1–43)
-1. 완료된 항목 (Completed)
-1-1. Path S 인증 헤드오프 구현 완료
-내용: HajunAI → CoreHub → CoreNull 인증 헤드오프 전 과정
-증거: Google login + Bearer token → CoreHub ticket 발급/교환 → CoreNull 기존 Owner 매핑 확인
-스모크 테스트: 정상·만료·재사용·Owner 미연결 4가지 경우 모두 통과 확인
-관련 파일: pasted_content_2026-11-23_04-52-20-608_8342f4.txt, pasted_content_2026-11-23_13-32-06-761_a106fc.txt
-1-2. 통합 마스터 문서 §§1~43 정리 완료
-내용: 전체 프로젝트 구성, 역할 경계, API 연결 구조, PR 현황, Production ref 대조 등 종합 기록
-판정: §43-1 Path S 인증 헤드오프 완료, §43-2 상호 ID 미입증, §43-3~§43-4 people decision items 보존
-관련 파일: pasted_content_2026-11-23_05-10-10-089_2125e4.txt
-1-3. Hajun 일반 AI 대화 vs 마당 메시지 구분 완료
-내용: action: 'chat' (일반 대화) vs action: 'post_message' (마당 메시지) 저장소·식별자·CoreHub 전달 명확히 구분
-주요 차이: 일반 채팅은 Fact 미송신, 마당 메시지도 CoreHub Fact 미송신, 둘 다 hajun_messages·hajunai_conversations 내부에만 저장
-관련 파일: pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (C-1~C-4)
-1-4. CoreNull message_id → Fact 경로 code-level 확인 완료
-내용: enqueueMessageOutbox → flush → POST /api/corehub/facts 경로에서 message_id + idempotency_key가 코드상 끝까지 전달됨
-구조: corenull_message_outbox 테이블에 message_id, idempotency_key=corenu...:v1 기록 후 flush 시 Idempotency-Key 헤더와 함께 전달
-제한: Production cron 가동 여부 및 실제 실패율은 미확인 (Production 조회 금지 정책)
-관련 파일: pasted_content_2026-11-23_13-37-15-681_67dbec.txt (1-1)
-1-5. CoreHub Fact·Connection·Meaning·Opportunity 파이프라인 구조 확인 완료
-내용: POST /api/corehub/facts 한 파일 안에서 Fact 저장 → detectConnections → connections insert → generateMeaning → generateOpportunity 연쇄 실행 확인
-특징: 별도 마이크로서비스·LLM 해석 레이어 없음, 하드코딩된 meaningMap·opportunityMap만 존재 (confidence 고정 0.72/0.80/0.95)
-관련 파일: pasted_content_2026-11-23_13-36-10-447_52a37f.txt (C 파이프라인)
-2. 부분 완료된 항목 (Partial Completion)
-2-1. CoreNull → CoreHub → CoreRing ticket 송신 완료 (main 기준)
-내용: CoreRingHandoffButton 컴포넌트 + handoffs/route.ts API 통해 audience: 'corering' ticket 발급 및 /auth/handoff#ticket= 리다이렉트
-범위: Hajun → CoreHub ticket 송신은 main에 구현됨
-미완: CoreRing 수신은 feat/corering-handoff-receive 브랜치에만 존재, main에는 없음
-관련 파일: pasted_content_2026-11-23_13-33-25-215_c54505.txt (2-2)
-2-2. CoreNull outbox→Fact code-path 유지 확인 (부분 완료)
-내용: message_id·idempotency_key 전달 경로는 code-level로 확인되나, 운영 실행 여부는 미확인
-구현: 완료된 배관 있으나, 실제 cron 가동 여부 및 생산성 평가는 Production probe 금지로 확인 불가
-관련 파일: pasted_content_2026-11-23_13-37-43-006_2d27f3.txt (2-1)
-2-3. Hajun → CoreHub 기회 조회 경로 존재 확인 (부분 완료)
-내용: fetchOpportunities(owner_key) 통해 CoreHub opportunities를 프롬프트에 삽입 가능
-제한: Hajun이 opportunity를 Fact로 다시 넣거나 Meaning을 재작성하지 않음 (일방향 조회·consume만)
-인증 불일치: CoreHub P4.3은 Bearer + auth_owner_links 요구하나, Hajun은 query owner_key + device_id 로 호출 → 계약 불일치
-관련 파일: pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (C-5~C-6), pasted_content_2026-11-23_13-37-43-006_2d27f3.txt (2-3)
-2-4. Hajun AI 대화·마당 메시지 핵심 구분 완료
-내용: owner_key는 CoreHub opportunities 조회용만 사용, 실제 메시지 그래프에 Fact로 쌓이지 않음
-마당 메시지: author_name 문자열 수준 식별, CoreHub 전달 사실 아님
-관련 파일: pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (C-1~C-2)
-3. 미완료된 항목 (Incomplete)
-3-1. CoreNull ↔ CoreRing 상호 ID 생성·DB 연결 저장 미입증
-내용: CoreNull ID를 CoreRing에 생성하거나, CoreRing ID를 CoreNull에 연결하는 DB crosswalk 코드 전무
-양방향 모두: foundation/auth-actor, foundation/owner-device, integration/corenull-design-rc 등 모든 브랜치 where 생성·crosswalk 코드 없음
-owner_key URL 브릿지: mes/integration-1에서는 URL→localStorage 수신 브릿지 존재하지만, 송신측(main)에 없음
-관련 파일: pasted_content_2026-11-23_13-33-25-215_c54505.txt (2-1), pasted_content_2026-11-23_13-33-48-609_3f4c3b.txt (3-1)
-3-2. "한 사람의 메시지가 Hajun·CoreNull·CoreRing에서 같은 ID로 모여 CoreHub에 들어가는 구조" 미구현
-내용: CoreNull/CoreRing Fact의 owner_key는 존재하나, Hajun 마당·일반 채팅은 그 키를 Fact로 사용하지 않음
-공통키 후보: CoreNull/CoreRing Fact의 owner_key가 가장 가깝으나, Hajun 경로에서는 사용 안 함
-관련 파일: pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (C-6, 전체 C 섹터), pasted_content_2026-11-23_13-36-10-447_52a37f.txt (4-3)
-3-3. auth_owner_links 채우는 구현 및 시드 절차 완전 미완료
-내용: corehub.auth_owner_links 테이블은 스키마·RLS·READ기 계약이 존재하나, INSERT/UPSERT를 하는 애플리케이션 코드와 공식 시드 절차 전무
-상태: RLS on, FORCE off, policy 0개, service_role 외 직접 기입 막혀 있음
-동기화: CoreNull corenull_owner_identities와 CoreHub auth_owner_links 자동 동기화 코드 없음
-관련 파일: pasted_content_2026-11-23_13-37-43-006_2d27f3.txt (2-2), pasted_content_2026-11-23_13-37-15-681_67dbec.txt (1-2)
-3-4. CoreRing opportunity 조회·연결 계약 불일치 지속
-내용: Hajun·CoreRing 모두 쿼리 owner_key + 무Bearer 방식으로 CoreHub에 조회, P4.3 Bearer + auth_owner_links와 불일치
-owner 후보: corenull_owner_key 우선이나 없으면 deviceId(corering_device_id) 폴백 → 한 사람 스코프와 어긋나기 쉬움
-관련 파일: pasted_content_2026-11-23_13-37-43-006_2d27f3.txt (3-3), pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (3)
-4. 미확인된 항목 (Unverified)
-4-1. Production 환경에서의 실제 동작 확인
-내용: cron 가동 여부, 실제 실패율, endpoint 실제 호출 결과, DB row 실제 적재 현황 등
-제한: Read-only 원칙에 따라 Production 직접 조회·쓰기 금지
-관련 파일: 전 파일 (전체에 걸쳐 언급된 제한 사항)
-4-2. 실제 운영 환경에서의 ID·메시지 흐름 동작 검증
-내용: 브라우저·앱 실제 사용 시 상호 ID가 어떻게 연결되고, 의미가 어떻게 파생되는지 실증
-제한: Code structure observation만 가능, runtime 검증 금지
-관련 파일: 전 파일 (전체에서 확인된 제한 사항)
-4-3. §32 사용자 제공 Production ref 독립 재검증 필요 여부
-내용: Hajun·CoreHub·CoreNull Production이 grlfocvlfatuvphkyivd로 "맞춰졌다고 사용자가 제공한 내용"은 독립 재검증되지 않음
-범위: CoreRing의 Production 상태나 endpoint 보호·인증·DB 권한까지 확인한 뜻 아님
-관련 파일: pasted_content_2026-11-23_06-29-57-726_a72ae8.txt (§32)
-5. 전체 비교표 (13개 파일 종합)
-구분
-file 1-6
-file 7-13
-전체 일치
-Path S 인증 헤드오프	완료	유지	13/13
-CoreNull ↔ CoreRing 상호 ID	미입증	유지 (미입증)	13/13
-Hajun 마당/일반 채팅 구분	완료	유지	13/13
-Hajun → CoreHub Fact 송신	미완료	유지 (미완료)	13/13
-CoreNull owner_key를 CoreRing으로 전달	부분	유지 (부분만)	13/13
-Canonical person-wide crosswalk	없음	유지 (없음)	13/13
-§43-3·§43-4 people decision	보존 필요	유지 (보존)	13/13
-CoreNull outbox→Fact code-path	부분 확인이전	코드상 끝까지 전달 확인 (message_id·idempotency)	13/13 (세부 확인증가)
-auth_owner_links 기록	-	미완료 (SELECT만, INSERT 앱 코드 부재)	신규 항목 추가
-Hajun opportunity 계약 불일치	-	부분·계약 불일치 (쿼리·device_id vs Bearer·links)	신규 항목 추가
-flush 운영 실작동 확인	-	미확인 (Production 조회 금지)	신규 항목 추가
-CoreRing opportunity 계약	-	부분·계약 불일치	신규 항목 추가
-6. 핵심 종결 문구
-**BRAINPOOL read-only investigation series (13개 파일)**는 **"새 시스템을 만들지 않고, 이미 존재하는 프로젝트 연결 구조를 이해하는 것"**에 초점을 맞추었으며, 특히 **상호 ID 생성에 대한 코드 증거가 전 부재하므로 "사람의 판단이 필요한 부분"**으로 남겨두는 것이 타당하다고 결론지울 수 있습니다.
+BRAINPOOL OS 통합 작업 현황 보고서
+- 기준일: 2026-11-23
+- 범위: HajunAI · CoreRing · CoreNull · CoreHub
+- 조사 방식: GitHub 저장소의 공개 코드·문서·브랜치·PR에 대한 읽기
+  전용 조사
+- 금지/미수행: 파일 수정, 커밋, PR 생성·수정·병합, 배포, DB
+  조회·변경, Production/Staging 접속 및 운영 API 호출
+- 목적: 지금까지 확인한 작업을 완료·부분 진행·미완료·미확인으로
+  분류하고, 통합 과정의 우선 위험과 다음 조사 항목을 정리
+1. 요약
+BRAINPOOL OS의 각 서비스에는 개별 기능과 연결 코드가 상당 부분 구현되어
+있다. 특히 최근 CoreNull은 글·씨앗·열매 이벤트를 Outbox로 통합하는 Stage
+A를 구현했고, CoreHub main에는 기존 Fact 수신 및 Fact → Connection →
+Meaning → Opportunity 처리 경로가 존재한다.
 
-주요 최종 확정 사항:
+그러나 서비스 사이의 인증된 사용자/기기 주체 전달과 공통 Owner 매핑은
+아직 완결되지 않았다. 현재 CoreNull Outbox의 Fact 요청 형식은 기존
+CoreHub main의 레거시 수신 계약과는 맞지만, CoreHub 보안 브랜치의
+Bearer/HMAC·주체 검증 계약과는 맞지 않는다. CoreRing과 HajunAI의
+Opportunity 조회도 CoreHub main의 Bearer 요구사항과 연결되지 않은 코드
+경로가 남아 있다.
 
-Path S 인증 헤드오프 구현 완료 (13/13 파일 확인)
-CoreNull ↔ CoreRing 상호 ID 생성·연결 저장 전면 미입증 (13/13 파일 일치, 핵심 보류 사안)
-Hajun 마당/일반 채팅은 owner_key를 Fact로 사용하지 않음 (13/13 파일 확인)
-§43-3·§43-4 people decision items는 유지되어야 함 (13/13 파일 유지)
-Code-level where message_id 전달 가능하지만, 위층 위축(auth_owner_links·`Hajun opportunity 계약)은 여전히 people decision 필요로 하는 열린 상태) (신규 확인)
-AI는 조사하고 근거를 제시하며, 최종 결정은 사람이 합니다.
+가장 중요한 결론은 다음과 같다.
+1. 기능 구현: CoreNull Outbox 및 CoreHub main Fact 처리 경로는
+   코드에서 확인됨.
+2. 인증 통합: CoreNull owner_key와 CoreHub owner_id/Bearer
+   주체, device_id 기반 Worker 주체 사이의 완결된 연결은 확인되지
+   않음.
+3. Opportunity 통합: CoreRing 및 HajunAI 클라이언트 요청과
+   CoreHub의 Bearer 기반 API 사이에 인증 전달/중계가 완성되지 않음.
+4. SQL 회귀 위험: 보안 브랜치의 후속 디바이스 마이그레이션은 앞선
+   전체 파이프라인 RPC를 단순 저장 RPC로 교체하는 내용이 확인되어, 적용
+   시 파이프라인 기능이 사라질 수 있는 코드상 위험이 있음. 실제 적용
+   여부는 미확인.
+5. 운영 상태: DB 마이그레이션 적용, 배포 반영, Cron 실행, 실제
+   이벤트 전달 성공 여부는 이번 조사 범위에서 확인하지 않음.
+2. 상태 분류 기준
+  분류                                의미
+  완료                            조사한 GitHub 코드/문서에서 해당
+기능 또는 계약 구현을 확인
 
-이 종합 조사 결과는 BRAINPOOL 프로젝트의 현재 통합 구조를 이해하는 데 기반이 되며, 독자님께서 필요로 하는 후속 작업(people decision items 처리, §42-§43 branch code 관찰, §32 재검증 등)에 활용하실 수 있습니다. read-only 원칙 내에서 가능한 범위에서 지원하겠습니다.
+  부분 진행                       일부 구성요소나 브랜치 구현은
+있으나 종단 간 연결, 테스트 또는
+통합이 미완성
+
+  미완료                          필요한 구현이 없거나 현재 코드와
+요구 계약이 명백히 불일치
+미확인                          저장소 코드만으로 실제 DB·배포·운영
+실행 상태를 판단할 수 없음
+"완료"는 코드에 구현됐다는 뜻이며, Production/Staging에서 작동한다고
+인증하는 의미가 아니다.
+3. 전체 현황표
+  영역              항목                                  상태                요약
+  CoreNull          글/씨앗/열매 Fact Outbox 적재         완료            PR #32가 main에 병합됨
+
+  CoreNull          Outbox flush 및 재시도                부분 진행       재시도·멱등 키는 있으나
+원자적 claim/lease와 원본
+저장 연계는 미완성
+
+  CoreNull          Worker 인증(HMAC/Bearer)              미완료/불일치   현재 Worker 요청에
+Bearer/HMAC이 확인되지
+않음
+
+  CoreNull          Owner ID 공통 매핑                    부분 진행       CoreNull identity mapping
+경로는 있으나 CoreHub
+auth_owner_links 자동
+동기화 경로 미확인
+
+  CoreHub           main Facts API                        완료(레거시       owner_key 수신 및 기존
+계약)             파생 처리 경로 존재
+
+  CoreHub           보안 Facts 수신                       부분 진행       보안 브랜치에 Bearer/HMAC
+및 RPC 구현이 있으나
+main에 통합됐다고 볼 수
+없음
+
+  CoreHub           Fact→Connection→Meaning→Opportunity   완료(기존 main    규칙 기반 파생 처리 확인
+경로)             
+
+  CoreHub           보안 RPC의 파이프라인 보존            위험/미완료     후속 SQL이 기존 전체
+파이프라인 RPC를 단순 저장
+RPC로 교체하는 코드 확인
+
+  CoreHub           Opportunity Bearer API                부분 진행       main API는 Bearer 기반
+owner scope를 요구하지만
+클라이언트 연결이 미완성
+
+  CoreRing          CoreHub Opportunity GET               미완료/불일치   main은 owner_key query
+방식, Bearer 없음
+
+  CoreRing          Opportunity PATCH/소비                미완료/불일치   PATCH 요청에 Bearer가 없고
+서버 계약과 맞지 않음
+
+  CoreRing          CoreNull handoff 수신                 부분 진행       PR #40에서 handoff 수신 및
+HttpOnly cookie 설정
+
+  CoreRing          Cookie→CoreHub Bearer 중계            미완료/미확인   직접 CoreHub 요청에
+cookie가 전달되는 서버
+중계 경로 미확인
+
+  HajunAI           Path S 로그인/handoff UI              부분 진행       PR #1은
+mes/integration-1 병합,
+main 병합과 별개
+
+  HajunAI           Opportunity GET Bearer                미완료/불일치   owner_key query만
+전송하고 Authorization
+Bearer 없음
+
+  HajunAI           Opportunity 소비 PATCH                미완료          Path S 브랜치의
+consumeOpportunities는
+no-op
+
+  HajunAI           Chat/Post와 CoreHub Fact 연결         미구현(의도된     일반 chat/post_message는
+분리)             CoreHub Fact를 직접 보내지
+않음
+
+  운영              DB 마이그레이션 적용                  미확인          DB 조회 금지 범위
+운영              배포/실제 API/Cron 실행               미확인          Production/Staging 접속 및
+API 호출 금지
+4. 완료된 항목
+4.1 CoreNull Outbox Stage A 구현
+근거: sykim-stack/brainpool-corenull, PR #32
+PR 상태: 2026-11-12 main 병합 확인
+변경 범위: 4개 파일
+
+확인한 구현: - lib/corehubOutbox.js: enqueueFact를 통한 Outbox 적재
+및 idempotency_key 생성/사용 - app/api/corenull/rooms/route.js: 씨앗
+생성 경로에서 직접 CoreHub 전송을 제거하고 Outbox enqueue -
+lib/seedPeriod.js: startSeedRun에서 space.seed.created,
+finalizeSeedIfDue에서 space.fruit.created enqueue -
+app/api/corenull/outbox/flush/route.js: pending 이벤트를 CoreHub Facts
+API로 전달하는 flush 경로 - 글 메시지 Outbox 경로와 씨앗·열매 Outbox
+경로를 하나로 통합하려는 Stage A 구조
+
+PR 설명에 따르면 enqueue 실패 시 사용자 응답은 유지하고 로그를 남기며,
+flush cron/수동 POST로 재시도하도록 구성했다.
+
+주의: PR 설명의 검증 체크리스트에는 Outbox 적재·flush·CoreHub Fact
+반영을 실제로 확인해야 한다는 항목이 남아 있다. 코드 병합과 운영 검증은
+별개다.
+4.2 CoreHub main의 기존 Fact 파생 파이프라인
+근거: sykim-stack/brainpool-corehub, main,
+app/api/corehub/facts/route.js
+
+확인한 기존 경로: - Fact 수신 및 저장 - 동일 owner_key 기준 최근 Fact
+탐색 - 규칙 기반 Connection 생성 - Meaning 생성 - Opportunity 생성
+
+대표 규칙: - seed.abandonment.risk → seed.at.risk →
+nudge.seed.owner - cross.language.relationship →
+new.relationship.forming → suggest.translation.help -
+seed.to.fruit.achieved → goal.achieved → celebrate.achievement
+
+이 경로는 현재 조사에서 확인한 main 코드 기준이며, LLM 추론이 아니라
+meaningMap/`opportunityMap`의 고정 규칙을 사용한다.
+4.3 CoreHub Opportunity API의 서버 측 인증·소유 범위 처리
+근거: sykim-stack/brainpool-corehub, main -
+app/api/corehub/opportunities/route.js -
+lib/corehub/resolveOwnerKeysFromBearer.mjs -
+lib/corehub/authHandoff.mjs
+
+확인한 코드: - Bearer 또는 corehub_session cookie에서 토큰을 추출 -
+Supabase auth.getUser(token) 또는 유효한 CoreHub 세션으로 인증 주체
+확인 - corehub.auth_owner_links에서 인증 사용자 ID에 연결된
+owner_key 조회 - 클라이언트가 query/body로 보낸 owner_key,
+owner_id, device_id 등 주체 식별 필드를 거부 - GET에서 소유자 범위,
+미소비 상태, 만료 여부를 필터링 - PATCH에서 소유자 범위와 미소비 상태를
+확인하고 소비 처리
+
+이는 서버 API 쪽 구현이다. CoreRing/HajunAI가 실제로 올바른 Bearer를
+전달하는지는 별도 문제다.
+4.4 CoreNull identity sync의 기존 Owner 연결 기능
+근거: sykim-stack/brainpool-corenull -
+app/api/identity/sync/route.js -
+lib/identity/resolveCoreNullOwnerFromToken.mjs -
+app/api/auth/google/route.js
+
+확인한 코드: - Google/Kakao/Supabase Auth 등 provider 식별 정보로
+CoreNull owner_key를 조회하거나 생성하는 경로 - 기존 provider
+subject가 다른 Owner에 연결된 경우 충돌 처리 - Google 로그인 후 Supabase
+Auth user ID를 provider: supabase identity로 같은 Owner에 연결하려는
+두 번째 sync 호출
+
+다만 Google 로그인 성공 후 두 번째 sync 실패를 무시하는 코드가 있어,
+로그인 성공이 Auth UID→CoreNull Owner 연결 성공을 보장하지는 않는다.
+5. 부분 진행 항목
+5.1 CoreNull Outbox 신뢰성
+근거: brainpool-corenull/main - lib/corehubOutbox.js -
+app/api/corenull/outbox/flush/route.js -
+doc/CORENULL_OUTBOX_STAGE_A_RELIABILITY_2026-11-12.md
+
+구현 확인: - Outbox enqueue - Idempotency-Key 헤더 전달 - 재시도 및
+backoff - 최대 재시도 횟수와 실패 상태 관리
+
+남은 문제: - 원본 Message 저장과 Outbox enqueue가 단일 DB 트랜잭션으로
+묶였는지 확인되지 않음. 현재 조사한 API 흐름은 원본 저장 이후 별도
+enqueue 방식이다. - Worker의 원자적 claim/lease가 확인되지 않음. 동시
+Worker 실행 시 동일 pending 행을 함께 선택할 가능성을 배제할 수 없다. -
+CoreHub 수신 성공 후 Outbox 상태가 안정적으로 sent 처리되는지 운영
+확인은 하지 않음. - Quarantine 및 운영자 복구 흐름은 완성 여부 미확인.
+5.2 CoreHub 보안 Facts API
+근거: brainpool-corehub,
+security/corehub-event-integrity-2026-10-05 브랜치 -
+app/api/corehub/facts/route.js - lib/corehub/auth.mjs -
+lib/corehub/hmac.mjs - lib/corehub/houseOwnership.mjs
+
+해당 브랜치에서 확인한 내용: - Bearer를 Supabase auth.getUser()로
+검증 - HMAC Worker 인증, timestamp, nonce, signature 검증 - device
+registry 및 nonce claim - 클라이언트가 보낸 owner/device 필드를 신뢰하지
+않음 - 검증된 인증 주체를 바탕으로 house ownership 확인 -
+Idempotency-Key와 RPC 기반 처리
+
+그러나 이 코드는 main의 레거시 Facts API와 다르며, 보안 브랜치의
+PR/마이그레이션이 main 또는 실제 배포 환경에 반영됐다고 확인할 수 없다.
+5.3 CoreNull Owner ↔ CoreHub Owner 매핑
+현재 확인된 서로 다른 매핑 계층: - CoreNull:
+corenull.corenull_owner_identities --- provider/provider_sub →
+owner_key - CoreHub main: corehub.auth_owner_links --- auth_user_id →
+owner_key
+
+CoreNull Google 로그인 흐름은 Supabase Auth user ID를 CoreNull
+identity에 연결하려 시도한다. 반면 CoreHub main Opportunity API는 별도
+테이블 corehub.auth_owner_links를 조회한다.
+
+따라서 CoreNull identity 생성/갱신이 CoreHub auth_owner_links에도 자동
+반영되는 공통 동기화 경로는 현재 조사에서 확인되지 않았다.
+
+CoreHub PR #5는 corenull_owner_identities를 직접 읽는 대안 구현을
+제안하지만 아직 열려 있으며 main에 병합되지 않았다.
+6. 미완료 및 불일치 항목
+6.1 CoreNull Outbox → CoreHub 보안 수신 인증 불일치
+CoreNull 송신: brainpool-corenull/main -
+app/api/corenull/outbox/flush/route.js
+
+현재 확인한 요청은 Content-Type, Idempotency-Key 중심이며,
+Authorization Bearer 또는 HMAC 서명 헤더가 확인되지 않았다. 본문에는
+owner_key가 포함된다.
+
+CoreHub 보안 수신:
+brainpool-corehub/security/corehub-event-integrity-2026-10-05 -
+app/api/corehub/facts/route.js - lib/corehub/auth.mjs -
+lib/corehub/hmac.mjs
+
+보안 수신은 검증된 Bearer 또는 HMAC Worker 주체를 요구하고 본문
+owner/device 식별값을 거부한다.
+
+따라서 현재 Outbox 요청은 레거시 main Facts API와는 맞지만 보안 브랜치
+계약과는 맞지 않는다. 단순히 헤더 하나를 추가하는 문제로 단정할 수 없다.
+이 이벤트가 로그인 사용자 주체인지, 검증된 Worker/device 주체인지 인증
+계약을 정해야 한다.
+6.2 CoreRing Opportunity GET/PATCH의 Bearer 미전달
+근거: brainpool-clean/main, app/page.tsx
+
+확인한 main 코드: - refreshOpportunities(ownerKey)가
+?owner_key=...를 포함해 CoreHub에 직접 GET 요청 - Authorization Bearer
+없음 - PATCH도 Content-Type 중심이며 Bearer 없음 -
+authHeaders(deviceId)가 존재하지만 Opportunity 요청에서 사용되지 않음
+
+CoreHub main Opportunity API는 Bearer 인증을 요구하고 client owner
+fields를 거부하므로, 현재 CoreRing main 요청과 계약이 맞지 않는다.
+6.3 CoreRing handoff cookie → CoreHub Bearer 중계 미완성
+근거: CoreRing PR #40, PR #39
+- PR #40: CoreNull handoff ticket 수신 후 CoreRing 도메인에 HttpOnly
+  corehub_session cookie 설정
+- PR #39: 브라우저 helper가 localStorage의 여러 session token 키 또는
+  Supabase localStorage session에서 토큰을 찾는 구현을 시도
+- PR #39의 app/page.tsx는 여전히 이전 owner_key query 요청 및
+  Bearer 없는 PATCH 경로를 유지
+- PR #40의 HttpOnly cookie는 JavaScript에서 읽을 수 없음
+- Cookie는 CoreRing 도메인에 설정되며 CoreHub 도메인으로 직접 요청할
+  때 자동 전달되는 것이 아님
+따라서 cookie를 서버 측에서 읽고 CoreHub 요청의 Authorization Bearer로
+전달하는 proxy/relay 경로는 확인되지 않았다. 두 PR을 함께 보더라도 종단
+간 Bearer 전달이 완성됐다고 볼 수 없다.
+6.4 HajunAI Opportunity GET/PATCH 인증 및 소비
+근거: HajunAI lib/hajunApiCore.ts, lib/hajunApiPost.ts, Path S
+작업 브랜치
+- fetchOpportunities(ownerKey)는 ?owner_key=...를 전달하고
+  Content-Type만 설정하며 Bearer가 없다.
+- consumeOpportunities(ids, 'shown')는 Path S 브랜치에서
+  deprecated/no-op 처리되어 네트워크 PATCH를 하지 않는다.
+- CoreHub API는 Bearer 기반 소유 범위를 요구하므로 요청 계약이 맞지
+  않는다.
+일반 HajunAI chat 및 post_message는 Hajun 내부 기록 경로이며 CoreHub
+Fact 전송과 구분된다. 이를 CoreHub Fact 파이프라인과 연결된 것으로
+간주하면 안 된다.
+6.5 CoreHub 보안 SQL RPC의 파이프라인 회귀 위험
+근거:
+brainpool-corehub/security/corehub-event-integrity-2026-10-05 -
+supabase/migrations/20261005150000_corehub_auth_idempotent_processing.sql -
+supabase/migrations/20261026_corehub_device_principal_and_registry.sql
+
+첫 번째 마이그레이션의 corehub.process_fact_event는 Fact 저장 이후
+Connection, Meaning, Opportunity까지 생성하는 전체 처리 로직을 포함한다.
+
+후속 20261026_corehub_device_principal_and_registry.sql은 기존
+process_fact_event 시그니처를 drop하고 대체하는 함수에서 Fact
+insert/dedupe/processed 처리만 수행한다. 이 대체 함수에는 앞선
+Connection/Meaning/Opportunity 생성 단계가 포함되지 않는다.
+process_device_fact_event도 Fact 저장 및 중복 처리 중심이다.
+
+위험: 두 번째 SQL을 그대로 적용하면 앞서 구현한 파생 파이프라인이
+사라질 수 있다.
+
+이것은 마이그레이션 코드의 정적 비교에서 발견한 위험이다. 실제 DB에 해당
+SQL이 적용됐는지는 확인하지 않았다. 해당 후속 migration 문서에는 DRAFT
+ONLY / Production 적용 금지 취지가 명시돼 있다.
+7. PR 및 브랜치 상태 스냅샷
+기준: 2026-11-23 조사 시점에 확보한 GitHub PR 정보. 이후 상태는 바뀔
+수 있다.
+  저장소                              PR 상태          Base ← Head                                         확인된 범위
+  brainpool-corenull                 #32 Merged        main ← feat/seed-fruit-outbox                   Stage A Outbox
+
+  brainpool-corehub                   #2 Open · Draft  보안 브랜치 기반                                    Auth UID / 멱등 Fact 처리
+
+  brainpool-corehub                   #3 Open · Draft  main ←                                            CoreNull Message Event 수신
+docs/corenull-message-event-contract-2026-10-20   계약 문서
+
+  brainpool-corehub                   #4 Open · Draft  보안 브랜치 ←                                       이벤트 검증/해시/멱등성
+feat/corehub-message-event-contract-2026-10-20    helper
+
+  brainpool-corehub                   #5 Open          main ← feat/p4-bearer-owner-key-scope           Bearer →
+corenull_owner_identities
+기반 Owner scope
+
+  brainpool-clean                    #39 Open          P4 Bearer 작업 브랜치                               Bearer helper, 클라이언트
+(CoreRing)                                                                                               연결 미완료
+
+  brainpool-clean                    #40 Open          handoff receive 브랜치                              HttpOnly cookie 수신
+(CoreRing)                                                                                               
+
+  HajunAI                             #1 Merged        mes/integration-1                                 Path S 로그인/handoff UI.
+main 병합과는 구분
+HajunAI                             #2 Open          CoreRing handoff 작업                               CoreRing handoff button
+참고: - CoreHub PR #3은 수신 계약 문서이며 실제 API 수신 구현이
+아니다. - CoreHub PR #4는 검증 helper 기반이며 네트워크 endpoint나
+migration을 추가하지 않는다. - CoreHub PR #5는 대안 Owner resolver이며
+main 반영 전이다. - PR 병합 상태는 DB migration 또는 배포 적용을
+의미하지 않는다.
+8. 미확인 항목 --- 운영/실환경 검증이 필요한 부분
+이번 조사는 사용자가 지정한 범위에 따라 GitHub 코드와 공개 문서만
+확인했다. 다음은 확인하지 않았다.
+1. CoreNull Outbox 관련 테이블과 인덱스가 실제 DB에 존재하는지
+2. CoreNull flush Cron이 실제로 등록·실행되는지
+3. Outbox 행이 실제로 sent 또는 failed 상태로 전이되는지
+4. CoreHub Facts 테이블에 CoreNull 이벤트가 실제 적재되는지
+5. CoreHub의 auth_owner_links에 실제 매핑 행이 존재하는지
+6. CoreNull corenull_owner_identities와 CoreHub auth_owner_links
+   데이터가 일치하는지
+7. CoreHub PR #2 및 후속 SQL migration이 어떤 DB에 적용됐는지
+8. 각 Vercel 배포가 어느 commit/branch를 실행 중인지
+9. Production/Staging에서 실제 Opportunity GET/PATCH가 정상 작동하는지
+10. 실제 HMAC secret, device registry, nonce table 설정 및 키 회전 상태
+11. CoreRing handoff cookie를 CoreHub 요청에 중계하는 배포된 server
+    proxy가 별도로 존재하는지
+이 항목들은 추정하지 않는다. 운영 접근이 허용되지 않는 한 계속
+미확인으로 유지한다.
+9. 우선순위별 다음 작업/조사
+P0 --- Fact 파이프라인 보존
+- 첫 번째/두 번째 CoreHub migration의 함수 시그니처와 본문을 다시 대조
+- device principal을 추가하더라도 기존 Connection→Meaning→Opportunity
+  생성 로직이 유지되는 통합 SQL인지 확인
+- 현재 main Fact 처리와 보안 RPC의 결과 계약 차이를 표로 정리
+P0 --- Fact 인증 계약 확정 전 연결 변경 금지
+- CoreNull Outbox 이벤트의 인증 주체가 user인지 worker/device인지 구분
+- owner_key, owner_id, device_id의 역할과 신뢰 출처를 명시
+- CoreNull Outbox가 보안 수신 계약과 호환되기 전에는 보안 endpoint로
+  전환됐다고 가정하지 않음
+P1 --- Owner mapping 단일화/동기화 경로 추적
+- CoreNull identity sync의 생성·갱신·충돌 처리 확인
+- CoreHub auth_owner_links의 실제 insert/upsert 경로 확인
+- PR #5의 직접 조회 방식과 현재 main의 별도 mapping 테이블 방식 비교
+- 매핑 누락·중복·회수(revocation) 처리 확인
+P1 --- CoreRing/HajunAI Opportunity 인증 전달
+- CoreRing HttpOnly cookie를 서버 proxy가 읽어 CoreHub Bearer로
+  전달하는 코드가 있는지 전체 route tree에서 재검색
+- CoreRing GET/PATCH가 같은 인증 전달 함수를 쓰는지 확인
+- HajunAI GET/PATCH가 유효한 session token을 전달하고 서버 소비
+  처리까지 수행하는지 확인
+- 소비 상태를 local-only로 둘지 CoreHub 서버 상태로 둘지는 기존 제품
+  계약과 대조
+P2 --- Outbox 내구성
+- 원본 저장과 enqueue의 원자성
+- atomic claim/lease
+- 중복 Worker 처리
+- 실패 이벤트 quarantine 및 수동 재처리
+- 재시도 이후 멱등 충돌의 관찰 가능성
+10. 이번 조사에서 하지 않은 작업
+다음 작업은 수행하지 않았다.
+- 저장소 파일 수정 또는 생성
+- 커밋, 브랜치 생성, PR 생성/수정/병합
+- Vercel 배포
+- Supabase DB 접속, SQL 실행, migration 적용
+- Production/Staging 환경 접속
+- 운영 API 호출 및 실제 사용자 데이터 확인
+이 보고서는 코드·PR·공개 문서의 정적 조사 결과다.
+11. 이전에 제공된 첨부 문서에 대한 주의
+이번 대화에 첨부된 코어널-시스템-프롬프트.txt와 기억.txt는
+CoreNull의 과거 개발 컨텍스트를 설명한다. 두 파일은 Vanilla JS/HTML,
+sykim-stack/corenull, device_id 기반 인증 및 초기 house 구조 등을
+기술한다.
+
+현재 통합 조사에서 사용한 저장소·경로(brainpool-corenull,
+brainpool-clean, brainpool-corehub, HajunAI 관련 저장소)와 시점 및
+구조가 다를 수 있다. 따라서 첨부 파일은 프로젝트의 역사적 배경으로만
+취급했으며, 최신 코드나 현재 배포 상태를 증명하는 근거로 사용하지
+않았다.
+12. 최종 결론
+BRAINPOOL OS는 각 서비스의 핵심 기능을 별도로 구현하는 단계에서, 서비스
+간 인증·Owner identity·이벤트 계약을 통합하는 단계로 넘어와 있다.
+
+가장 실질적인 진전은 CoreNull Outbox Stage A가 main에 병합되어 Fact
+이벤트 전달 구조가 정리된 것이다. 반면 가장 큰 통합 공백은 인증된
+주체가 CoreNull/CoreRing/HajunAI에서 CoreHub까지 동일한 Owner 범위로
+이어지는 경로가 아직 완성되지 않은 것이다.
+
+따라서 다음 통합 검토의 핵심은 기능을 새로 추가하는 것이 아니라 아래 세
+가지를 코드와 SQL 수준에서 보존·연결하는 것이다.
+1. CoreNull Outbox의 이벤트 전달 신뢰성
+2. 검증된 user/worker principal과 Owner 매핑
+3. CoreHub Fact → Connection → Meaning → Opportunity 파이프라인의 보존
+운영 DB와 배포 상태는 이번 조사 범위 밖이므로, 코드상 구현 완료와 실제
+운영 완료를 혼동하지 않는다.
