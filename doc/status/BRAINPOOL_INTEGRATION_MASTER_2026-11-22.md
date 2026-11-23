@@ -46,3 +46,40 @@
 ### 현재 결정
 
 **④ 상태: 가이드 작성 완료 / 실제 연결 구현 미착수 / Gate 0 정보·승인 대기.** 다음 착수 입력은 저장소 및 기준 커밋, Path S의 구체 기능 범위, 상대 서비스와 계약, 승인된 비운영 환경/URL, 리뷰어·승인자다. 이 항목이 확인되면 먼저 읽기 전용으로 기존 자산과 인터페이스를 매핑한다.
+
+
+## 30. 2026-11-23 CoreHub Facts/Auth UID/outbox 트랙: 읽기 전용 검토
+
+**상태:** 기존 통합 작업의 현행 코드·PR·계약을 대조했다. 이번 단계는 검토/문서화만 수행했으며 코드, PR, DB, API, staging 또는 배포 설정은 변경하지 않았다. CoreHub `main` 기준 SHA `932cd90d3a72935992b2fe32046512fdbf8bb768`, CoreNull `main` 기준 SHA `2888653a5c2db1c673a18e3e06ffd992cef2d5c8`이다. 검토 시점 CoreHub PR #2/#3/#4는 open draft이며, CoreNull PR #32 Stage A는 2026-11-12에 merge된 상태다.
+
+### 현행 경로와 기존 작업의 연결
+
+- CoreNull Stage A는 현재 `corenull_message_outbox`를 사용한다. Message 저장 다음 별도 요청으로 outbox를 적재하고, worker가 `/api/corehub/facts`에 `source/fact_type/owner_key/house_id/occurred_at/payload`를 보내며 `Authorization` 헤더는 보내지 않는다. 현재 payload에는 verified `owner_id`, `event_id`, `source_revision`, `payload_sha256` 계약이 없다.
+- CoreNull의 별도 session handoff에는 verified Auth UID로 기존 owner mapping을 조회하는 경로가 있다. 그러나 현재 outbox producer/worker에는 그 Auth UID mapping이 연결되지 않았다. 따라서 “CoreNull에 Auth UID mapping 코드가 전혀 없음”이 아니라 “기존 mapping 기능과 CoreHub outbox가 아직 연결되지 않음”으로 구분한다.
+- CoreNull Stage A 문서가 명시한 미보장은 Message/outbox 동일 transaction, Auth UID canonical producer, worker claim/lease, quarantine 및 source_revision 기반 event identity다.
+- CoreHub `main`의 Facts handler는 현재 `owner_key` 기반 수신과 조회·insert 흐름이다. handler 코드의 정적 관찰만으로 실제 배포 노출이나 런타임 보호 상태를 확정하지 않는다.
+
+### 관련 PR·계약 대조
+
+- CoreHub PR #2 head `e62310abcb1efbdeec8357564c3ca2cfb7484054`는 user Fact 요청에 Supabase Bearer 검증을 제안하고 worker 요청에는 HMAC device principal을 제안한다. 현재 CoreNull worker는 이 인증을 보내지 않으며, PR #2 worker handler는 요청 body의 `owner_key`와 `house_id`도 거부한다. 따라서 현 producer를 PR #2와 그대로 연결할 수 없다.
+- CoreHub PR #3 head `b8b0c750c9fa76db7b94479e0816ef6d5ca4c307`의 Message event 계약은 `event_id/source_record_id/source_revision/verified owner_id/payload_sha256` envelope와 전용 `message_events` 저장 모델을 제안한다. 반면 PR #2의 device message 경로는 `corehub.facts`에 적재하는 RPC를 호출한다. 저장 경계와 event contract를 두 PR 사이에서 먼저 맞춰야 한다.
+- PR #3은 HMAC이 worker를 인증하더라도 `owner_id`가 실제 Auth UID임을 증명하지 못한다고 명시한다. PR #2의 device principal만으로 owner/house ownership을 추정하지 않는다.
+- PR #2 head는 `payload_sha256`의 모양만 검사하고 canonical payload를 재계산하지 않는다. 관련 device RPC의 duplicate 비교도 PR #3이 요구하는 모든 immutable field 및 secondary event identity 비교와 일치하지 않는다. 이는 정적 코드 검토 결과이며, 실행 테스트 결과가 아니다.
+- PR #2 head에는 임시 `hmac-debug` GET route가 포함되어 있다. secret 자체는 반환하지 않지만 secret 환경변수 이름, 설정 여부, 길이, 공백 여부 및 실행 환경 값을 공개하므로 merge 전에 제거할 검토 항목으로 기록한다.
+
+### 통합 진행 판정
+
+**현재 판정: 기존 본선 작업을 이어갈 수 있으나 producer 활성화 및 E2E는 보류.** 새 시스템을 설계하자는 결론이 아니다. 이미 있는 CoreNull Stage A, Auth-to-owner mapping, CoreHub PR #2/#3 계약을 기준으로 다음 차이를 해소해야 한다.
+
+1. verified Auth UID와 기존 owner_key mapping을 outbox producer가 사용하는 경로 및 미연결/충돌 시 fail-closed 동작을 확정한다.
+2. 기존 PR #2와 #3 중 Stage A Message를 수신할 실제 경로·저장 모델·이벤트 envelope를 한 계약으로 정합시킨다.
+3. CoreNull worker 인증 및 payload를 확정된 CoreHub 수신 계약과 호환시킨다. hash 재계산, 정확한 replay 비교, DB 원자적 idempotency, retry/quarantine 처리를 staging에서 확인한다.
+4. disposable staging에서 신규 저장, 동일 event replay, 변경 payload conflict, 동시 replay, ownership 거부, commit/응답 유실을 검증하고 결과/rollback을 남긴 뒤 운영 적용은 별도 승인으로 다룬다.
+
+이 검토는 이전 A+B 결정이나 Vercel 소유자 측 보호 설정을 변경하지 않았다. Vercel 설정과 실제 배포 endpoint의 런타임 보호 여부는 이번 읽기 전용 저장소 검토에서 확인하지 않았다.
+
+### 문서 연속성 메모
+
+GitHub `main`에서 읽은 이 마스터 파일의 본문은 §29에서 끝나 있었다. 앞선 대화 요약에는 §32 기록이 언급되어 있었지만, 현재 확인된 이 경로의 `main` 본문에서는 해당 섹션을 찾지 못했다. 따라서 확인 가능한 기존 본문을 보존하고 다음 번호인 §30으로 이번 검토를 추가했으며, 확인하지 못한 §30~§32 내용을 추정해 복원하거나 덮어쓰지 않았다.
+
+참고: [CoreHub PR #2](https://github.com/sykim-stack/brainpool-corehub/pull/2), [CoreHub PR #3](https://github.com/sykim-stack/brainpool-corehub/pull/3), [CoreNull Stage A PR #32](https://github.com/sykim-stack/brainpool-corenull/pull/32), [CoreNull Stage A 신뢰성 상태](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/doc/CORENULL_OUTBOX_STAGE_A_RELIABILITY_2026-11-12.md), [CoreNull outbox 설계 v1](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/doc/CORENULL_COREHUB_MESSAGE_OUTBOX_DESIGN_v1.md).
