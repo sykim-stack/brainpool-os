@@ -647,7 +647,8 @@ Vercel 재인증 후 primary CoreHub 프로젝트의 environment variable metada
 - 과거 commit `a35c416`은 본문을 §25만 남긴 상태로 줄였지만, 후속 `a521448`이 1–25의 전체 내용을 다시 복원했다. 이후 `1acd8d2`에서 §26이 추가됐다.
 - 이번 단절의 직접 원인은 `f6a354b`다. 이 commit은 `1acd8d2`를 parent로 두며 commit message는 “append”였지만, 실제 diff는 기존 문서에서 **539줄을 삭제하고 31줄만 추가**해 §§1–26을 제거하고 §§27–29만 남겼다. 따라서 이는 단순한 §32 미수록이 아니라 기존 마스터 본문이 현재 파일에서 빠진 truncation이었다.
 - 복원 commit에서는 `1acd8d2`의 §§1–26 본문을 정확한 과거 원문으로 복구하고, 기존 main의 §§27–30을 그대로 보존한다. 여기에 본 히스토리 감사는 §31로 기록한다. 복구는 과거 자료에 근거한 문서 복원이며, 코드·DB·배포 변경이 아니다.
-- 마스터 파일의 commit history에는 이 복구 전까지 §§30–32가 존재하지 않았다. 다른 remote branch에는 이 마스터 파일이 없었고, 저장소의 다른 문서 `BRAINPOOL_INTEGRATED_STRUCTURE_INVESTIGATION_v2_2026-09-28.md`에도 §32가 있으나 그 내용은 “최종 관점”이며 Production project ref 확인이 아니다. 해당 문서는 이 마스터와 별개다.
+- 이번 세션을 시작하기 전 target master history에는 §§30–32가 없었다. 이번 세션에서 §30을 추가한 뒤 복원 직전 상태에는 §30만 있었고 §31–32는 없었다. 다른 remote branch에는 이 마스터 파일이 없었고, 저장소의 다른 문서 `BRAINPOOL_INTEGRATED_STRUCTURE_INVESTIGATION_v2_2026-09-28.md`에도 §32가 있으나 그 내용은 “최종 관점”이며 Production project ref 확인이 아니다. 해당 문서는 이 마스터와 별개다.
+- 정확한 과거 원문에는 top-level `## 6.` 제목이 두 개 있다(“Git 브랜치와 PR 현황”, “Production 및 Staging 환경 구분”). 복구에서는 과거 텍스트를 그대로 보존해 이 번호 중복은 수정하지 않았다. 이는 기존 번호 정리 항목이며 §27–§32 단절의 원인은 아니다.
 - §32의 Production project ref 상태는 과거 기록에서 복구한 것이 아니다. 사용자가 이전 진행 메시지에서 제공한 사실을 아래 §32에 출처를 구분해 새로 반영한다.
 
 참고: [§§1–26이 보존된 commit `1acd8d2`](https://github.com/sykim-stack/brainpool-os/blob/1acd8d2201ba7d53821a3ad717706d15a2bc3b8b/doc/status/BRAINPOOL_INTEGRATION_MASTER_2026-11-22.md), [기존 본문을 잘라낸 commit `f6a354b`](https://github.com/sykim-stack/brainpool-os/commit/f6a354b2f464a5924bd9b793bba779f03bfad247), [별도 2026-09-28 조사 문서 §32](https://github.com/sykim-stack/brainpool-os/blob/main/doc/status/BRAINPOOL_INTEGRATED_STRUCTURE_INVESTIGATION_v2_2026-09-28.md#32-최종-관점).
