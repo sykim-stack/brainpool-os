@@ -1,0 +1,111 @@
+BRAINPOOL Read-Only Investigation Series — Final Summary Document
+(13개 파일 기반 종합 조사 결과)
+작업 개요
+기간: 2026-11-23 기준 연속 조사
+파일 수: 13개 파일 기반 종합 조사
+원칙: Read-only 조사만 수행 (DB 쓰기, 코드 수정, PR·배포 금지)
+기준 마스터: BRAINPOOL_INTEGRATION_MASTER_2026-11-22.md (§§1–43)
+1. 완료된 항목 (Completed)
+1-1. Path S 인증 헤드오프 구현 완료
+내용: HajunAI → CoreHub → CoreNull 인증 헤드오프 전 과정
+증거: Google login + Bearer token → CoreHub ticket 발급/교환 → CoreNull 기존 Owner 매핑 확인
+스모크 테스트: 정상·만료·재사용·Owner 미연결 4가지 경우 모두 통과 확인
+관련 파일: pasted_content_2026-11-23_04-52-20-608_8342f4.txt, pasted_content_2026-11-23_13-32-06-761_a106fc.txt
+1-2. 통합 마스터 문서 §§1~43 정리 완료
+내용: 전체 프로젝트 구성, 역할 경계, API 연결 구조, PR 현황, Production ref 대조 등 종합 기록
+판정: §43-1 Path S 인증 헤드오프 완료, §43-2 상호 ID 미입증, §43-3~§43-4 people decision items 보존
+관련 파일: pasted_content_2026-11-23_05-10-10-089_2125e4.txt
+1-3. Hajun 일반 AI 대화 vs 마당 메시지 구분 완료
+내용: action: 'chat' (일반 대화) vs action: 'post_message' (마당 메시지) 저장소·식별자·CoreHub 전달 명확히 구분
+주요 차이: 일반 채팅은 Fact 미송신, 마당 메시지도 CoreHub Fact 미송신, 둘 다 hajun_messages·hajunai_conversations 내부에만 저장
+관련 파일: pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (C-1~C-4)
+1-4. CoreNull message_id → Fact 경로 code-level 확인 완료
+내용: enqueueMessageOutbox → flush → POST /api/corehub/facts 경로에서 message_id + idempotency_key가 코드상 끝까지 전달됨
+구조: corenull_message_outbox 테이블에 message_id, idempotency_key=corenu...:v1 기록 후 flush 시 Idempotency-Key 헤더와 함께 전달
+제한: Production cron 가동 여부 및 실제 실패율은 미확인 (Production 조회 금지 정책)
+관련 파일: pasted_content_2026-11-23_13-37-15-681_67dbec.txt (1-1)
+1-5. CoreHub Fact·Connection·Meaning·Opportunity 파이프라인 구조 확인 완료
+내용: POST /api/corehub/facts 한 파일 안에서 Fact 저장 → detectConnections → connections insert → generateMeaning → generateOpportunity 연쇄 실행 확인
+특징: 별도 마이크로서비스·LLM 해석 레이어 없음, 하드코딩된 meaningMap·opportunityMap만 존재 (confidence 고정 0.72/0.80/0.95)
+관련 파일: pasted_content_2026-11-23_13-36-10-447_52a37f.txt (C 파이프라인)
+2. 부분 완료된 항목 (Partial Completion)
+2-1. CoreNull → CoreHub → CoreRing ticket 송신 완료 (main 기준)
+내용: CoreRingHandoffButton 컴포넌트 + handoffs/route.ts API 통해 audience: 'corering' ticket 발급 및 /auth/handoff#ticket= 리다이렉트
+범위: Hajun → CoreHub ticket 송신은 main에 구현됨
+미완: CoreRing 수신은 feat/corering-handoff-receive 브랜치에만 존재, main에는 없음
+관련 파일: pasted_content_2026-11-23_13-33-25-215_c54505.txt (2-2)
+2-2. CoreNull outbox→Fact code-path 유지 확인 (부분 완료)
+내용: message_id·idempotency_key 전달 경로는 code-level로 확인되나, 운영 실행 여부는 미확인
+구현: 완료된 배관 있으나, 실제 cron 가동 여부 및 생산성 평가는 Production probe 금지로 확인 불가
+관련 파일: pasted_content_2026-11-23_13-37-43-006_2d27f3.txt (2-1)
+2-3. Hajun → CoreHub 기회 조회 경로 존재 확인 (부분 완료)
+내용: fetchOpportunities(owner_key) 통해 CoreHub opportunities를 프롬프트에 삽입 가능
+제한: Hajun이 opportunity를 Fact로 다시 넣거나 Meaning을 재작성하지 않음 (일방향 조회·consume만)
+인증 불일치: CoreHub P4.3은 Bearer + auth_owner_links 요구하나, Hajun은 query owner_key + device_id 로 호출 → 계약 불일치
+관련 파일: pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (C-5~C-6), pasted_content_2026-11-23_13-37-43-006_2d27f3.txt (2-3)
+2-4. Hajun AI 대화·마당 메시지 핵심 구분 완료
+내용: owner_key는 CoreHub opportunities 조회용만 사용, 실제 메시지 그래프에 Fact로 쌓이지 않음
+마당 메시지: author_name 문자열 수준 식별, CoreHub 전달 사실 아님
+관련 파일: pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (C-1~C-2)
+3. 미완료된 항목 (Incomplete)
+3-1. CoreNull ↔ CoreRing 상호 ID 생성·DB 연결 저장 미입증
+내용: CoreNull ID를 CoreRing에 생성하거나, CoreRing ID를 CoreNull에 연결하는 DB crosswalk 코드 전무
+양방향 모두: foundation/auth-actor, foundation/owner-device, integration/corenull-design-rc 등 모든 브랜치 where 생성·crosswalk 코드 없음
+owner_key URL 브릿지: mes/integration-1에서는 URL→localStorage 수신 브릿지 존재하지만, 송신측(main)에 없음
+관련 파일: pasted_content_2026-11-23_13-33-25-215_c54505.txt (2-1), pasted_content_2026-11-23_13-33-48-609_3f4c3b.txt (3-1)
+3-2. "한 사람의 메시지가 Hajun·CoreNull·CoreRing에서 같은 ID로 모여 CoreHub에 들어가는 구조" 미구현
+내용: CoreNull/CoreRing Fact의 owner_key는 존재하나, Hajun 마당·일반 채팅은 그 키를 Fact로 사용하지 않음
+공통키 후보: CoreNull/CoreRing Fact의 owner_key가 가장 가깝으나, Hajun 경로에서는 사용 안 함
+관련 파일: pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (C-6, 전체 C 섹터), pasted_content_2026-11-23_13-36-10-447_52a37f.txt (4-3)
+3-3. auth_owner_links 채우는 구현 및 시드 절차 완전 미완료
+내용: corehub.auth_owner_links 테이블은 스키마·RLS·READ기 계약이 존재하나, INSERT/UPSERT를 하는 애플리케이션 코드와 공식 시드 절차 전무
+상태: RLS on, FORCE off, policy 0개, service_role 외 직접 기입 막혀 있음
+동기화: CoreNull corenull_owner_identities와 CoreHub auth_owner_links 자동 동기화 코드 없음
+관련 파일: pasted_content_2026-11-23_13-37-43-006_2d27f3.txt (2-2), pasted_content_2026-11-23_13-37-15-681_67dbec.txt (1-2)
+3-4. CoreRing opportunity 조회·연결 계약 불일치 지속
+내용: Hajun·CoreRing 모두 쿼리 owner_key + 무Bearer 방식으로 CoreHub에 조회, P4.3 Bearer + auth_owner_links와 불일치
+owner 후보: corenull_owner_key 우선이나 없으면 deviceId(corering_device_id) 폴백 → 한 사람 스코프와 어긋나기 쉬움
+관련 파일: pasted_content_2026-11-23_13-37-43-006_2d27f3.txt (3-3), pasted_content_2026-11-23_13-35-34-950_fbbc5b.txt (3)
+4. 미확인된 항목 (Unverified)
+4-1. Production 환경에서의 실제 동작 확인
+내용: cron 가동 여부, 실제 실패율, endpoint 실제 호출 결과, DB row 실제 적재 현황 등
+제한: Read-only 원칙에 따라 Production 직접 조회·쓰기 금지
+관련 파일: 전 파일 (전체에 걸쳐 언급된 제한 사항)
+4-2. 실제 운영 환경에서의 ID·메시지 흐름 동작 검증
+내용: 브라우저·앱 실제 사용 시 상호 ID가 어떻게 연결되고, 의미가 어떻게 파생되는지 실증
+제한: Code structure observation만 가능, runtime 검증 금지
+관련 파일: 전 파일 (전체에서 확인된 제한 사항)
+4-3. §32 사용자 제공 Production ref 독립 재검증 필요 여부
+내용: Hajun·CoreHub·CoreNull Production이 grlfocvlfatuvphkyivd로 "맞춰졌다고 사용자가 제공한 내용"은 독립 재검증되지 않음
+범위: CoreRing의 Production 상태나 endpoint 보호·인증·DB 권한까지 확인한 뜻 아님
+관련 파일: pasted_content_2026-11-23_06-29-57-726_a72ae8.txt (§32)
+5. 전체 비교표 (13개 파일 종합)
+구분
+file 1-6
+file 7-13
+전체 일치
+Path S 인증 헤드오프	완료	유지	13/13
+CoreNull ↔ CoreRing 상호 ID	미입증	유지 (미입증)	13/13
+Hajun 마당/일반 채팅 구분	완료	유지	13/13
+Hajun → CoreHub Fact 송신	미완료	유지 (미완료)	13/13
+CoreNull owner_key를 CoreRing으로 전달	부분	유지 (부분만)	13/13
+Canonical person-wide crosswalk	없음	유지 (없음)	13/13
+§43-3·§43-4 people decision	보존 필요	유지 (보존)	13/13
+CoreNull outbox→Fact code-path	부분 확인이전	코드상 끝까지 전달 확인 (message_id·idempotency)	13/13 (세부 확인증가)
+auth_owner_links 기록	-	미완료 (SELECT만, INSERT 앱 코드 부재)	신규 항목 추가
+Hajun opportunity 계약 불일치	-	부분·계약 불일치 (쿼리·device_id vs Bearer·links)	신규 항목 추가
+flush 운영 실작동 확인	-	미확인 (Production 조회 금지)	신규 항목 추가
+CoreRing opportunity 계약	-	부분·계약 불일치	신규 항목 추가
+6. 핵심 종결 문구
+**BRAINPOOL read-only investigation series (13개 파일)**는 **"새 시스템을 만들지 않고, 이미 존재하는 프로젝트 연결 구조를 이해하는 것"**에 초점을 맞추었으며, 특히 **상호 ID 생성에 대한 코드 증거가 전 부재하므로 "사람의 판단이 필요한 부분"**으로 남겨두는 것이 타당하다고 결론지울 수 있습니다.
+
+주요 최종 확정 사항:
+
+Path S 인증 헤드오프 구현 완료 (13/13 파일 확인)
+CoreNull ↔ CoreRing 상호 ID 생성·연결 저장 전면 미입증 (13/13 파일 일치, 핵심 보류 사안)
+Hajun 마당/일반 채팅은 owner_key를 Fact로 사용하지 않음 (13/13 파일 확인)
+§43-3·§43-4 people decision items는 유지되어야 함 (13/13 파일 유지)
+Code-level where message_id 전달 가능하지만, 위층 위축(auth_owner_links·`Hajun opportunity 계약)은 여전히 people decision 필요로 하는 열린 상태) (신규 확인)
+AI는 조사하고 근거를 제시하며, 최종 결정은 사람이 합니다.
+
+이 종합 조사 결과는 BRAINPOOL 프로젝트의 현재 통합 구조를 이해하는 데 기반이 되며, 독자님께서 필요로 하는 후속 작업(people decision items 처리, §42-§43 branch code 관찰, §32 재검증 등)에 활용하실 수 있습니다. read-only 원칙 내에서 가능한 범위에서 지원하겠습니다.
