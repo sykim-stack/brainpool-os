@@ -1,7 +1,7 @@
 # BRAINPOOL 통합연결 작업 마스터 문서
 
 **작성일**: 2026-11-22  
-**최종 갱신**: 2026-11-23 (원문 §§1–42 보존, 완료·미완료 판정 §43 추가)
+**최종 갱신**: 2026-11-26 (현재 통합 범위 확인 및 사용자 증가 시 재검토 기준 §44 추가)
 **목적**: 지금까지 분석한 전체 레포와 연결 구조를 하나의 작업 기준 문서로 통합 (새 설계·구현 없음)
 **범위**: HajunAI ↔ CoreNull 인증 연결 (CoreRing은 별도 보류)
 **기반**: `hermes-work-boundaries` 원칙 및 관측된 사실 기록
@@ -1094,3 +1094,43 @@ CoreHub PR #2의 canonical ownership table이 전혀 없다는 뜻은 아니다.
 - 원본 기록은 보존한다. 기존 절의 과거 관측을 현재 상태로 덮어쓰지 않고, 변경된 사실은 새 날짜가 붙은 후속 절에 추가한다.
 
 **현재 종합 판정:** HajunAI–CoreHub–CoreNull의 Path S 인증 Handoff는 기존 구현 및 기본 smoke test까지 완료된 기준 경로다. 그러나 BRAINPOOL 전체의 “한 사람·여러 프로젝트 ID·메시지 연결 기반 의미화” 통합은 아직 완료되지 않았다. 다음 초점은 새 설계나 재시작이 아니라 §42의 기존 branch 후보에서 상호 ID 경로와 HajunAI 메시지 흐름의 실제 구현 증거를 찾는 것이다.
+
+## 44. 2026-11-26 현재 통합 범위 확인: 기본 연결은 종료, 확장 검토는 사용자 증가 시 재개
+
+**사용자 확인 및 작업 기준:** 사용자는 현재 통합 연결 작업을 완료된 것으로 이해하고 있으며, 추가 검토는 사용자가 늘어날 때 진행하기를 원한다. 이 기준에 따라 현재 기본 연결 작업은 종료 상태로 두고, 확장·보강 항목을 즉시 실행할 작업으로 취급하지 않는다. 기존 §§43의 기록을 삭제하거나 과거 관측을 덮어쓰지 않고, “기본 연결”과 “전체 프로젝트의 사람·메시지 의미 통합” 범위를 구분한다.
+
+### 44-1. 이번 상태 확인에서 본 저장소 근거
+
+GitHub 연결을 먼저 확인한 뒤 `brainpool-corenull`, `brainpool-corehub`, `brainpool-os`의 `main` 및 관련 PR 메타데이터를 읽기 전용으로 조회했다. 확인한 기준은 다음과 같다.
+
+- CoreNull `main`: `2888653a5c2db1c673a18e3e06ffd992cef2d5c8` (`feat(identity): link Supabase auth_user_id for CoreHub handoff`, 2026-11-21).
+- CoreHub `main`: `7cd85d889f3bbe852e10c18d0efb906988aebcf5` (2026-11-24).
+- 이 마스터를 포함한 brainpool-os `main`: `f379dd32896328ab9c08d2bbe4053cb9365d7a3b` (2026-11-23).
+- CoreNull PR #32 Stage A outbox와 PR #24 outbox 설계는 병합되어 있다. CoreNull PR #16 Auth Actor는 open이다. CoreHub PR #2와 #3은 open draft다.
+
+현재 CoreNull `app/api/corenull/outbox/flush/route.js`는 기존 `/api/corehub/facts` 형식으로 `source`, `fact_type`, `owner_key`, `house_id`, `occurred_at`, `payload`를 POST하며, 헤더에는 `Idempotency-Key`를 보낸다. 현재 CoreHub `main`의 `app/api/corehub/facts/route.js`는 이 형식의 필수 값과 `owner_key` 기반 적재·중복 확인을 구현하고 있다. 따라서 **저장소 코드상 기존 Stage A outbox와 CoreHub `main`의 레거시 Facts 수신 계약은 연결 가능한 기본 경로**로 확인된다. 이는 CoreNull Stage A가 이미 병합되어 있다는 사실 및 §43의 완료된 Path S 인증 Handoff 기록과 일치한다.
+
+### 44-2. 완료 판정과 검증 경계
+
+**현재 사용자 범위의 완료 판정:** CoreNull Stage A outbox → CoreHub `main`의 기존 Facts 수신 경로와 Path S 기본 인증 Handoff를 현재 통합 연결의 기준 범위로 닫는다. 사용자 증가 전까지 이 연결을 새 통합 과제로 반복 구현하거나, CoreHub PR #2/#3의 초안 계약을 현재 경로의 필수 blocker로 다시 분류하지 않는다.
+
+이번 확인은 저장소 코드·문서·PR 상태의 정적 대조다. 이번 작업에서 Production/Staging endpoint를 호출하거나 DB 상태·실제 배포 버전·최근 이벤트 전달 성공률을 검사하지 않았다. 따라서 이 기록은 이번 세션의 런타임 E2E 증명이나 실서비스 상태 보증이 아니다. 기존 단계에서 수행한 smoke test 근거는 §43에 기록된 범위로 유지한다.
+
+### 44-3. 사용자 증가 시 재검토할 보류 항목
+
+아래 항목은 현 기본 연결 완료와 구분하는 **확장/강화 backlog**로 유지하며, 이번 작업에서는 구현·승인·merge·배포하지 않았다.
+
+1. CoreNull outbox의 worker 인증, verified Auth UID 및 House ownership 결속, atomic claim/lease, 충돌 처리와 quarantine/retry 강화.
+2. CoreHub PR #2의 Bearer/HMAC 기반 Facts 처리와 PR #3의 별도 Message Event 계약 간 수신 endpoint·저장 모델·event envelope 정합 및 승인.
+3. CoreRing·HajunAI까지 포함한 사람 단위 canonical identity, 상호 ID 연결, message relation 전달과 CoreHub 의미화 범위.
+4. Auth Actor PR #16의 별도 보안 검토와 적용 여부 판단.
+
+기본 연결을 완료로 분류한 것은 이 보강 항목들이 이미 구현·검증됐다는 뜻이 아니다. CoreHub PR #2/#3이 draft로 열려 있다는 사실도 기록하되, 이 사실만으로 현재 기본 경로가 작동하지 않는다고 단정하지 않는다. 반대로 현재 코드의 계약상 연결 가능성만으로 Production의 실제 가용성·보호 설정·성공적인 전달을 단정하지 않는다.
+
+### 44-4. 재개 기준과 작업 마무리
+
+다음 통합 작업은 사용자가 실제 사용자 증가를 확인해 재검토를 요청할 때 재개한다. 수치 기준은 현재 정하지 않았다. 그때도 §30–§43의 조사 결과를 처음부터 반복하지 말고, 사용량 규모와 관측된 병목·실패 증거를 먼저 확인해 필요한 backlog만 선택한다. 실제 장애·보안 사고 또는 사용자가 따로 지정한 시급한 사유가 있으면 사용자 증가를 기다리지 않고 해당 범위만 재개할 수 있다.
+
+**이번 세션 완료:** GitHub 연결 및 권한 확인, 세 저장소의 `main`과 관련 PR 상태 확인, CoreNull outbox와 CoreHub legacy Facts route의 코드 계약 대조, 사용자 범위에 따른 현재 연결 작업 종료 및 후속 보강 항목의 사용자 증가 시 검토 기록. 코드, DB, API, PR, 배포 설정은 변경하지 않았다. 이번 추가는 이 마스터 문서의 append-only 상태 기록이다.
+
+참고: [CoreNull Stage A outbox sender](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/app/api/corenull/outbox/flush/route.js), [CoreHub main Facts receiver](https://github.com/sykim-stack/brainpool-corehub/blob/7cd85d889f3bbe852e10c18d0efb906988aebcf5/app/api/corehub/facts/route.js), [CoreNull PR #16](https://github.com/sykim-stack/brainpool-corenull/pull/16), [CoreHub PR #2](https://github.com/sykim-stack/brainpool-corehub/pull/2), [CoreHub PR #3](https://github.com/sykim-stack/brainpool-corehub/pull/3).
