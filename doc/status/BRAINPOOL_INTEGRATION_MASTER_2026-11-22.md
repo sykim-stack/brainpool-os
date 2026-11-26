@@ -1,7 +1,7 @@
 # BRAINPOOL 통합연결 작업 마스터 문서
 
 **작성일**: 2026-11-22  
-**최종 갱신**: 2026-11-26 (현재 통합 범위 확인 및 사용자 증가 시 재검토 기준 §44 추가)
+**최종 갱신**: 2026-11-26 (현재 통합 범위 §44 및 Auth Actor PR #16 점검 §45 추가)
 **목적**: 지금까지 분석한 전체 레포와 연결 구조를 하나의 작업 기준 문서로 통합 (새 설계·구현 없음)
 **범위**: HajunAI ↔ CoreNull 인증 연결 (CoreRing은 별도 보류)
 **기반**: `hermes-work-boundaries` 원칙 및 관측된 사실 기록
@@ -1134,3 +1134,24 @@ GitHub 연결을 먼저 확인한 뒤 `brainpool-corenull`, `brainpool-corehub`,
 **이번 세션 완료:** GitHub 연결 및 권한 확인, 세 저장소의 `main`과 관련 PR 상태 확인, CoreNull outbox와 CoreHub legacy Facts route의 코드 계약 대조, 사용자 범위에 따른 현재 연결 작업 종료 및 후속 보강 항목의 사용자 증가 시 검토 기록. 코드, DB, API, PR, 배포 설정은 변경하지 않았다. 이번 추가는 이 마스터 문서의 append-only 상태 기록이다.
 
 참고: [CoreNull Stage A outbox sender](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/app/api/corenull/outbox/flush/route.js), [CoreHub main Facts receiver](https://github.com/sykim-stack/brainpool-corehub/blob/7cd85d889f3bbe852e10c18d0efb906988aebcf5/app/api/corehub/facts/route.js), [CoreNull PR #16](https://github.com/sykim-stack/brainpool-corenull/pull/16), [CoreHub PR #2](https://github.com/sykim-stack/brainpool-corehub/pull/2), [CoreHub PR #3](https://github.com/sykim-stack/brainpool-corehub/pull/3).
+
+## 45. 2026-11-26 다음 보안 작업 triage: CoreNull Auth Actor PR #16
+
+**재개 계기와 범위:** §44에서 통합 확장 검토는 사용자 증가 시 재개하기로 했다. 이후 사용자가 “다음 중요 작업” 진행을 요청해, 통합 범위를 다시 여는 대신 별도 보안 backlog인 CoreNull Auth Actor PR #16을 읽기 전용으로 우선 점검했다. 이번 단계는 PR 상태와 주요 인증 경계의 triage이며, merge/rebase, 코드 수정, 배포 또는 운영 테스트 승인이 아니다.
+
+### 확인 결과
+
+- PR #16 `feat(auth): Auth Actor — body owner_key 권한 제거`는 `main` 대상 open PR이며 draft는 아니다. head `03a6d9377dd277f2547b22e6d35bedbded8dd66e`, 54 commits, 40 files, 약 3,317 additions / 1,073 deletions다. 최근 갱신은 2026-10-13이다.
+- GitHub가 현재 상태를 `CONFLICTING` / `DIRTY`로 표시한다. 현재 CoreNull `main`은 `2888653a5c2db1c673a18e3e06ffd992cef2d5c8`이므로 PR의 기존 변경을 그대로 merge할 수 없다.
+- PR은 `lib/actor.js`에서 서명 actor token을 발급·검증하고, 선택된 CoreNull 쓰기 API에서 `requireActor`와 `assertOwnerMatchesActor`를 사용해 body `owner_key`가 actor와 불일치할 때 차단하는 구조다.
+- 단, `/api/corenull/session` bootstrap은 클라이언트 body에서 받은 `owner_key`만 검사한 뒤 별도 사용자/소유권 인증 없이 actor cookie를 발급한다. PR 설명도 익명 UUID를 아는 사람은 같은 세션을 받을 수 있는 **API-key 모델**이라고 한계를 명시한다. 따라서 이 변경은 쓰기 요청마다 임의 `owner_key`를 바꾸는 것을 막는 경계이지, 인증된 사람과 해당 Owner 사이의 소유권을 증명하는 완전한 인증으로 기록하지 않는다.
+- PR 본문 테스트 계획의 체크박스는 미완료 상태다. 변경 파일 목록에서 dedicated test/spec 파일을 찾지 못했다. GitHub에 기록된 Vercel Preview 배포 성공은 functional/security test 통과와 같지 않다.
+- 이 PR은 인증 route 외에도 UI 및 다수 쓰기 경로를 포함하는 넓은 변경이다. 충돌 해결만으로 통합 안전성이 확보되는 것이 아니므로, 현 head를 merge하거나 자동으로 conflict를 해소하지 않는다.
+
+### 현재 판정과 다음 한 단계
+
+**판정: 보안상 중요한 후속 항목이지만, PR #16은 현재 병합 준비 상태가 아니다.** 가장 작은 다음 조치는 기존 변경을 버리지 않고 main과의 파일별 충돌·기능 의존성을 읽기 전용으로 분해해, Auth Actor 보안 변경과 UI/기능 변경을 분리할 수 있는지 판단하는 것이다. 이후에도 사용자 승인 범위에서 bootstrap의 익명 소유권 한계, test matrix, 회귀 영향과 migration/deploy 필요 여부를 확정해야 한다. 이 기록만으로 PR을 수정·재구성·병합하지 않는다.
+
+**이번 단계에서 하지 않은 일:** PR branch에 push/commit, conflict resolution, tests 실행, Preview 로그인/E2E, DB/API 호출, deployment 또는 Production 변경은 없다. PR의 GitHub CI/Vercel 상태는 배포 체크로만 관찰했으며, PR 본문에 명시된 security test를 통과한 근거로 취급하지 않는다.
+
+참고: [CoreNull Auth Actor PR #16](https://github.com/sykim-stack/brainpool-corenull/pull/16), [PR head actor token implementation](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/lib/actor.js), [PR head session bootstrap](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/app/api/corenull/session/route.js).
