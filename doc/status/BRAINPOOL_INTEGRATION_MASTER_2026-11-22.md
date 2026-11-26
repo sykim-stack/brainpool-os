@@ -1181,3 +1181,20 @@ PR에 새로 추가된 `lib/actor.js`, `lib/actorFetch.ts`, `app/api/corenull/se
 다음 안전 단계는 Actor cookie 발급이 기존 verified handoff/Owner mapping에 어떤 방식으로 결합되어야 하는지 범위를 확정하는 것이다. 그 결정 전까지 PR #16 conflict를 해결하거나, 새 branch·PR을 만들거나, 코드를 수정·테스트·배포하지 않는다. 기존 통합 기본 경로 종료 판정(§44)은 유지하며, 이번 점검은 이 별도 보안 항목의 triage만 진행했다.
 
 참고: [CoreNull current core-session handoff route](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/app/api/auth/core-session/route.js), [PR #16 session bootstrap](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/app/api/corenull/session/route.js), [PR #16](https://github.com/sykim-stack/brainpool-corenull/pull/16).
+
+## 47. 2026-11-26 사용자 결정: Auth Actor 발급은 verified handoff 필수
+
+사용자는 Actor cookie 발급 기준으로 **검증된 Supabase Auth/Path S handoff와 기존 `auth_user_id → owner_key` 매핑이 확인된 경우에만 발급**하는 방안을 선택했다. 매핑이 없으면 fail-closed로 거부하며, 현재 `/api/auth/core-session`의 `owner_link_required` 응답(409) 원칙을 유지한다. 요청 body의 `owner_key`만으로 세션을 발급하는 익명 bootstrap은 허용하지 않는다.
+
+이 결정은 §15의 로그인 제품 방향을 바꾸지 않는다. Google 로그인은 여전히 연결 검증 수단이며, 일반 사용자 경험에 로그인·계정 생성을 자동 추가하라는 승인이 아니다. 따라서 Actor로 보호되는 쓰기 기능의 비로그인 사용성 및 기존 익명 Owner 데이터의 처리 범위는 구현 전에 제품 동작으로 별도 검토해야 하며, Owner 생성·병합·재할당은 승인되지 않았다.
+
+### 현재 코드와 통합 blocker
+
+- 현재 CoreNull `main`의 `POST /api/auth/core-session`은 CoreHub handoff ticket 교환 후 verified `auth_user_id`로 기존 Owner mapping을 확인하지만, Actor cookie는 발급하지 않는다.
+- PR #16 head의 `/api/corenull/session`은 main의 verified handoff 경로를 호출하지 않고 body `owner_key`만으로 Actor cookie를 발급한다. 이 경로는 선택된 정책과 맞지 않는다.
+- PR #16 head에는 현재 main의 `/api/auth/core-session` 경로가 없고, PR과 main 사이에 23개 conflict path가 있다. 그러므로 session route만 독립 수정하거나 PR 전체를 단순 merge/cherry-pick하는 것으로 안전한 통합이 되지 않는다.
+- 다음 단계는 충돌을 자동 해결하지 않고, verified handoff 성공과 기존 mapping 확인 뒤 Actor cookie를 발급하는 최소 통합안을 설계하고 필요한 화면·쓰기 호출 회귀 범위를 명시하는 것이다. Cookie 만료/갱신·로그아웃 동작은 handoff session 수명과 함께 정해야 한다.
+
+**이번 결정으로 승인된 것은 인증 기준뿐이다.** CoreNull 코드/PR 수정, conflict resolution, 새 PR 생성, CoreNull 코드 commit/push, 테스트·Preview/E2E, DB/API 호출 및 배포는 수행하거나 승인된 것으로 간주하지 않는다. 이 절의 문서 기록은 사용자가 요청한 통합 마스터 업데이트이며 코드/PR 변경 승인이 아니다. §46의 읽기 전용 분석 결과와 당시 상태 기록은 보존한다.
+
+참고: [CoreNull current core-session handoff route](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/app/api/auth/core-session/route.js), [PR #16 session bootstrap](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/app/api/corenull/session/route.js), [CoreNull Auth Actor PR #16](https://github.com/sykim-stack/brainpool-corenull/pull/16).
