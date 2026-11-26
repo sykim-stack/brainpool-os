@@ -1,7 +1,7 @@
 # BRAINPOOL 통합연결 작업 마스터 문서
 
 **작성일**: 2026-11-22  
-**최종 갱신**: 2026-11-26 (현재 통합 범위 §44 및 Auth Actor PR #16 점검 §45 추가)
+**최종 갱신**: 2026-11-26 (현재 통합 범위 §44 및 Auth Actor PR #16 점검 §§45–46 추가)
 **목적**: 지금까지 분석한 전체 레포와 연결 구조를 하나의 작업 기준 문서로 통합 (새 설계·구현 없음)
 **범위**: HajunAI ↔ CoreNull 인증 연결 (CoreRing은 별도 보류)
 **기반**: `hermes-work-boundaries` 원칙 및 관측된 사실 기록
@@ -1155,3 +1155,29 @@ GitHub 연결을 먼저 확인한 뒤 `brainpool-corenull`, `brainpool-corehub`,
 **이번 단계에서 하지 않은 일:** PR branch에 push/commit, conflict resolution, tests 실행, Preview 로그인/E2E, DB/API 호출, deployment 또는 Production 변경은 없다. PR의 GitHub CI/Vercel 상태는 배포 체크로만 관찰했으며, PR 본문에 명시된 security test를 통과한 근거로 취급하지 않는다.
 
 참고: [CoreNull Auth Actor PR #16](https://github.com/sykim-stack/brainpool-corenull/pull/16), [PR head actor token implementation](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/lib/actor.js), [PR head session bootstrap](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/app/api/corenull/session/route.js).
+
+## 46. 2026-11-26 Auth Actor PR #16 충돌·의존성 분해
+
+**범위:** 사용자의 계속 진행 요청에 따라 PR #16의 현재 GitHub 상태를 다시 확인하고, 임시 로컬 복제본에서 `main`과 PR head의 merge tree만 계산했다. checkout/merge/rebase/cherry-pick 또는 remote write는 하지 않았고, CoreNull 작업 트리는 clean 상태로 유지됐다.
+
+### 충돌과 변경 묶음
+
+PR head는 `03a6d9377dd277f2547b22e6d35bedbded8dd66e`, 현재 `main`은 `2888653a5c2db1c673a18e3e06ffd992cef2d5c8`다. merge-tree 결과 **23개 경로 충돌**이 확인됐다.
+
+- **인증/API·기능 로직:** `app/api/auth/google/route.js`, `app/api/identity/sync/route.js`, `app/api/corenull/posts/route.js`, `app/api/corenull/rooms/route.js`, `app/api/corenull/seed-pages/route.js`, `lib/seedPeriod.js`. seed-pages 두 경로는 현재 main과 PR 양쪽에서 추가된 add/add 충돌이다.
+- **화면/클라이언트:** `app/globals.css`, `app/houses/[houseId]/living/LivingClient.tsx`, `app/houses/create/page.tsx`, `app/living/page.tsx`, `app/plaza/page.tsx`, `app/posts/[postId]/PostClient.tsx`, `app/rooms/[id]/RoomClient.tsx`, `app/s/[slug]/page.tsx`, `app/write/page.tsx`, `app/yard/page.tsx`.
+- **컴포넌트·미디어:** `components/blocks/MyContentBlock.tsx`, `components/blocks/NeighborContentBlock.tsx`, `components/blocks/YardBlock.tsx`, `components/corenull/OwnerGate.tsx`, `components/corenull/RoomSettingsModal.tsx`, `components/corenull/VideoCaptureModal.tsx`, `lib/compressMedia.ts`.
+
+PR에 새로 추가된 `lib/actor.js`, `lib/actorFetch.ts`, `app/api/corenull/session/route.js`, `components/corenull/ActorBootstrap.tsx` 자체는 충돌 경로가 아니더라도 기존 화면·쓰기 route와 연결돼야 한다. 따라서 파일 몇 개를 옮기는 것만으로 기능 분리가 완료되는 것은 아니다. PR 전체가 40개 파일을 변경하고 54개 커밋을 포함하며, Auth 외 UI/seed/media 변경도 포함한다.
+
+### 신뢰 주체 의존성
+
+현재 CoreNull `POST /api/auth/core-session`은 CoreHub handoff ticket을 교환하고 반환된 verified `auth_user_id`로 기존 `owner_key` mapping을 조회한다. 반면 PR #16의 `POST /api/corenull/session`은 이 handoff route를 호출하지 않고 request body의 `owner_key`를 받아 Actor cookie를 발급한다. 기존 경로는 `corehub_session` cookie를 설정하지만 `corenull_actor`를 발급하지 않는다. 따라서 기존 verified handoff를 Actor에 연결하려면 cookie·세션 수명·기존 mapping 부재 시 동작을 정한 별도 계약 검토가 필요하다. 이는 현재 구현됐거나 승인된 연결로 취급하지 않는다.
+
+### 판정과 안전한 다음 단계
+
+**판정:** PR #16은 단순 conflict resolution이나 cherry-pick으로 안전하게 main에 합칠 수 없다. Auth Actor의 일부를 좁혀 별도 변경으로 만들 가능성은 있지만, owner key만 아는 익명 사용자를 인증된 사용자인 것처럼 취급하지 않도록 Actor 발급 기준부터 명시해야 한다. 특히 기존 verified handoff를 필수로 할지, 익명 UUID bootstrap을 계속 허용할지는 제품 동작과 보안 경계를 바꾸는 선택이므로 현재 자료만으로 자동 결정하지 않는다.
+
+다음 안전 단계는 Actor cookie 발급이 기존 verified handoff/Owner mapping에 어떤 방식으로 결합되어야 하는지 범위를 확정하는 것이다. 그 결정 전까지 PR #16 conflict를 해결하거나, 새 branch·PR을 만들거나, 코드를 수정·테스트·배포하지 않는다. 기존 통합 기본 경로 종료 판정(§44)은 유지하며, 이번 점검은 이 별도 보안 항목의 triage만 진행했다.
+
+참고: [CoreNull current core-session handoff route](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/app/api/auth/core-session/route.js), [PR #16 session bootstrap](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/app/api/corenull/session/route.js), [PR #16](https://github.com/sykim-stack/brainpool-corenull/pull/16).
