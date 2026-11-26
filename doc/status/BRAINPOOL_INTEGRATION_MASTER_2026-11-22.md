@@ -1,7 +1,7 @@
 # BRAINPOOL 통합연결 작업 마스터 문서
 
 **작성일**: 2026-11-22  
-**최종 갱신**: 2026-11-26 (현재 통합 범위 §44 및 Auth Actor PR #16 점검 §§45–46 추가)
+**최종 갱신**: 2026-11-27 (현재 통합 범위 §44, Auth Actor PR #16 점검 §§45–47 및 충돌 해결 권고·종결 기록 §48 추가)
 **목적**: 지금까지 분석한 전체 레포와 연결 구조를 하나의 작업 기준 문서로 통합 (새 설계·구현 없음)
 **범위**: HajunAI ↔ CoreNull 인증 연결 (CoreRing은 별도 보류)
 **기반**: `hermes-work-boundaries` 원칙 및 관측된 사실 기록
@@ -1198,3 +1198,49 @@ PR에 새로 추가된 `lib/actor.js`, `lib/actorFetch.ts`, `app/api/corenull/se
 **이번 결정으로 승인된 것은 인증 기준뿐이다.** CoreNull 코드/PR 수정, conflict resolution, 새 PR 생성, CoreNull 코드 commit/push, 테스트·Preview/E2E, DB/API 호출 및 배포는 수행하거나 승인된 것으로 간주하지 않는다. 이 절의 문서 기록은 사용자가 요청한 통합 마스터 업데이트이며 코드/PR 변경 승인이 아니다. §46의 읽기 전용 분석 결과와 당시 상태 기록은 보존한다.
 
 참고: [CoreNull current core-session handoff route](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/app/api/auth/core-session/route.js), [PR #16 session bootstrap](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/app/api/corenull/session/route.js), [CoreNull Auth Actor PR #16](https://github.com/sykim-stack/brainpool-corenull/pull/16).
+
+
+## 48. 2026-11-27 Auth Actor PR #16 충돌 분석 종결 기록
+
+### 기준과 최종 상태
+
+- 분석 기준: CoreNull `main` `2888653a5c2db1c673a18e3e06ffd992cef2d5c8`, PR #16 head `03a6d9377dd277f2547b22e6d35bedbded8dd66e`, merge base `a2b921a081a0d32bc05a77dd871330dd4a76cf8d`. 23개 충돌 경로를 각 브랜치와 merge-base 기준으로 비교했다.
+- 사용자의 제품 범위 재확인: **CoreNull 일반 사용자는 로그인하지 않는다.** §47의 verified Path S/handoff 기준은 연동용 인증 경계에 관한 것이며, 이를 일반 사용자의 모든 쓰기 API에 로그인/Actor 필수 조건으로 확장하는 뜻이 아니다. 로그인 없는 일반 쓰기 흐름을 바꾸거나 로그인 UI를 추가하는 결정은 없었다.
+- PR #16은 2026-11-27에 **병합 없이 닫혔다**. `mergedAt`은 null이다. 코드 수정, 충돌 해결, 테스트, DB/API 호출, Preview 또는 Production 배포는 하지 않았다. 이번 분석은 PR을 다시 열거나 재검토해야 한다는 작업 지시가 아니라 종료 당시의 해결 권고 기록이다.
+- 요약 판정: 충돌이 단순 텍스트 문제가 아니며 54 commits/40 files의 PR 전체 변경을 한 번에 합칠 근거가 없다. main의 기존 로그인 없는 제품 동작과 도메인 기능을 기준으로 보존하고, 아래 PR 기능 제안은 별도 제품/API 계약이 확정되기 전 적용하지 않는다. 특히 owner_key만으로 Actor를 발급하는 행위를 인증된 사람/Owner 소유 증명으로 기록하지 않는다.
+
+### 23개 경로별 해결 권고
+
+| 경로 | 충돌 쟁점 및 권고 |
+| --- | --- |
+| `app/api/auth/google/route.js` | main의 Google 검증과 Supabase `user.id`→기존 Owner mapping을 보존한다. PR의 `needs_owner_choice` 응답처럼 Owner가 확정되지 않으면 `owner_key`를 반환하지 않는 분기는 이식 후보지만, 로그인 없는 일반 CoreNull 사용자의 기본 경로를 새로 만들거나 바꾸는 근거로 삼지 않는다. Path S 조건은 연동 흐름에만 적용한다. |
+| `app/api/identity/sync/route.js` | main의 provider allowlist, 기존 mapping 복원, 불일치 409와 PR의 자동 UUID 생성 방지를 기준 후보로 기록한다. 다만 요청 `owner_key`만으로 identity 연결 또는 Actor 발급을 허용하지 않는다. provider별 인증·복구 계약은 이 분석에서 미확인으로 남긴다. |
+| `app/api/corenull/posts/route.js` | main의 durable outbox/idempotency, pin, 기존 게시물 편집·삭제 등 도메인 동작을 보존한다. PR의 Actor guard를 모든 일반 쓰기에 적용하지 않는다. PR seed 기능은 main `seedPeriod`와 상태 전이를 대조해야 하며 직접 `pushFact`와 outbox의 중복 발행을 피한다. |
+| `app/api/corenull/rooms/route.js` | main의 cover 이미지, seed 해제와 outbox 동작을 우선 보존한다. GET/writable 응답 형태와 기본값(`private/general` 대 `public/normal`)은 호출부·제품 계약 없이는 변경하지 않는다. PR의 Actor 검증은 로그인 없는 전체 사용자의 쓰기를 막는 방식으로 이식하지 않는다. |
+| `app/api/corenull/seed-pages/route.js` | 양쪽 add/add 구현의 GET/POST/PATCH를 기능별로 비교한다. main의 생성·경계 필터·cover 데이터를 보존하고, 수정 시 페이지/방 소유권과 인증 정책을 기존 일반 사용자 모델에 맞춰야 한다. Actor 전용으로 바꾸거나 익명 bootstrap을 인증으로 간주하는 변경은 적용하지 않는다. |
+| `app/globals.css` | 기본 카드 높이와 클리핑은 유지하고, main의 댓글 펼침 예외와 폭 축소 규칙은 기본 클리핑을 깨지 않도록 정리하는 것이 권고안이다. main/PR의 동일 선택자 선언을 통째로 덮어쓰지 않는다. |
+| `app/houses/[houseId]/living/LivingClient.tsx` | main의 방별 전체 피드와 복도 최신 글 분리를 보존한다. PR의 archived/deleted 제외와 방별 최대 20개 제한은 데이터·성능 계약 확인 후 적용할 후보로 기록하며, 현재로선 자동 상한을 강제하지 않는다. |
+| `app/houses/create/page.tsx` | main의 공통 `HouseCreateForm` 위임 구조를 유지한다. PR의 직접 페이지 구현을 복원하지 않는다. 생성 요청의 서버 권한·Owner 처리 방식은 이 페이지의 `owner_key` 전달만으로 인증된다고 간주하지 않는다. |
+| `app/living/page.tsx` | main의 빈 집/빈 글 샘플, 오류 처리, avatar 편집을 보존한다. PR의 archived/deleted 필터와 피드 제한, 북마크 Actor 호출은 API 계약 확인 뒤 선택할 후보이며, 일반 로그인 요구로 확장하지 않는다. |
+| `app/plaza/page.tsx` | main의 통합 피드·샘플·방문자 읽기 동작과 PR의 공개방 탐색/페이지네이션은 목적이 다르므로 단순 덮어쓰지 않는다. 방문자에게 표시할 공개방·샘플·신청 기능의 범위를 제품 계약 없이 바꾸지 않는다. |
+| `app/posts/[postId]/PostClient.tsx` | main의 집주인 공지 pin, 상세 화면 과실 조작 비노출, 업로드·편집 흐름을 기준으로 한다. PR의 signed-URL 영상 업로드나 Actor 호출은 업로드 API와 세션 계약을 확인하기 전 적용하지 않는다. |
+| `app/rooms/[id]/RoomClient.tsx` | main의 cover 편집, 접근 거부 UI, 기존 fruit 기능을 보존한다. PR의 참여자 필터/stage UI는 member ID가 `owner_key`와 같은 기준인지, fruit post와 `room.harvested` 중 어떤 것이 정본인지 확인된 뒤에만 검토한다. |
+| `app/s/[slug]/page.tsx` | main의 cover, 탐색 링크, pinned 우선 정렬을 보존하고 PR의 리스트/블록 전환은 별도 UI 후보로 둔다. 공개 열람과 댓글 쓰기 권한은 분리한다. 이 페이지에서 `ownerKey`를 전달하는 것 자체는 인증 근거가 아니다. |
+| `app/write/page.tsx` | main의 파일별 오류 처리와 공지 pin을 보존한다. PR의 영상 signed URL, seed 메모/공유 경로는 해당 API 계약 확인 후 후보로 남긴다. seed 생성 UI가 여러 곳에 중복되지 않도록 단일 진입점을 정해야 하며, 이는 현재 종결 기록에서 새로 확정하지 않는다. |
+| `app/yard/page.tsx` | main의 샘플 콜드스타트, 오류 복구, 방 목록을 기준으로 한다. PR의 북마크 end/resume과 관계 수락/취소 기능은 기존 비로그인 권한 모델에 맞는 서버 동작을 확인하기 전에는 적용하지 않는다. 방문자에게 관계 기능을 노출할지도 미확인이다. |
+| `components/blocks/MyContentBlock.tsx` | main의 공통 `brickLayout`, gallery/sample 처리, pager/swipe를 보존한다. PR의 page reset은 보조 개선 후보이며, 카드 수·제목 생략·`showInterest` 기본값은 실제 호출부 확인 없이 바꾸지 않는다. |
+| `components/blocks/NeighborContentBlock.tsx` | main의 방 썸네일 및 초대 복도 동작을 보존한다. PR의 관심/댓글/조회 메타 props는 하위 `PostBlock` 계약과 각 호출부가 확인된 경우에만 별도로 결합한다. `ownerKey` prop이 Actor 권한을 만든다고 가정하지 않는다. |
+| `components/blocks/YardBlock.tsx` | main의 avatar 편집, owner/visitor 데이터 구성, brick 레이아웃을 기준으로 한다. PR 상호작용 props와 접근성 보완은 후보로 남기되 방문자 관계·피드 노출 정책이 확정되지 않은 동작은 이식하지 않는다. |
+| `components/corenull/OwnerGate.tsx` | main의 샘플 Yard 진입, 생성 실패 처리, 기존 복구 동작을 보존한다. PR의 Google `google_choice`/LINK 흐름은 현재 일반 사용자 로그인 UX가 없다는 제품 경계와 별도 연동 인증 계약을 검토하지 않고 추가하지 않는다. |
+| `components/corenull/RoomSettingsModal.tsx` | main의 seed 진행 상태·링크·메모를 보존 후보로 둔다. PR의 비소유자 자기 나가기 동작도 기존 room/member 권한과 대조 후 검토한다. 설정 화면과 `/write` 중 seed 시작을 어디에 둘지는 본 분석만으로 결정하지 않는다. |
+| `components/corenull/VideoCaptureModal.tsx` | main의 사진+영상 모드와 API 타입을 기준으로 한다. PR의 녹화 오류 처리, recorder MIME 및 cleanup 개선은 이식 후보이며, portal 전체 화면은 호출부/레이아웃 검토 없이 바꾸지 않는다. |
+| `lib/compressMedia.ts` | main의 이미지 처리와 25MB 영상 제한을 보존한다. PR의 80MB 상향, 이미지 품질 변경, `isVideo` 반환은 스토리지 한도와 소비자 계약이 확인되기 전에는 적용하지 않는다. |
+| `lib/seedPeriod.js` | main의 run 시작/종료, start 시각·게시물 경계, 자동 태깅·메타, fruit/outbox 흐름을 기준으로 한다. PR의 선택 글/메모 UX는 실제 schema와 호출부가 확인된 경우에만 통합하고, seed page·room 상태가 이중 진실이 되지 않도록 해야 한다. |
+
+### 재개 기준
+
+이 §48은 PR #16의 종료 당시 분석을 보존해 동일한 충돌 조사부터 반복하지 않도록 하기 위한 기록이다. PR은 닫혔으며 기본 통합 연결 상태(§44)를 다시 열지 않는다. 사용자가 나중에 별도로 재검토를 요청하거나 실제 장애·보안 사고가 발생하면, 이 절의 경로별 권고를 출발점으로 삼되 최신 코드·API·제품 요구 변경만 확인한다. CoreNull 일반 사용자에게 로그인 또는 Path S handoff를 일괄 요구하는 변경은 사용자 승인 없이 하지 않는다.
+
+**완료 경계:** PR #16 closed, unmerged. 23개 경로의 분석 및 해결 권고를 기록했다. 코드는 수정하지 않았고, conflict resolution·테스트·DB/API 호출·배포는 하지 않았다.
+
+참고: [CoreNull PR #16 (closed, unmerged)](https://github.com/sykim-stack/brainpool-corenull/pull/16), [현재 CoreNull main: `/api/auth/core-session`](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/app/api/auth/core-session/route.js), [PR #16 head: Actor session bootstrap](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/app/api/corenull/session/route.js).
