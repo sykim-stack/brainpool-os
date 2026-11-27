@@ -1244,3 +1244,14 @@ PR에 새로 추가된 `lib/actor.js`, `lib/actorFetch.ts`, `app/api/corenull/se
 **완료 경계:** PR #16 closed, unmerged. 23개 경로의 분석 및 해결 권고를 기록했다. 코드는 수정하지 않았고, conflict resolution·테스트·DB/API 호출·배포는 하지 않았다.
 
 참고: [CoreNull PR #16 (closed, unmerged)](https://github.com/sykim-stack/brainpool-corenull/pull/16), [현재 CoreNull main: `/api/auth/core-session`](https://github.com/sykim-stack/brainpool-corenull/blob/2888653a5c2db1c673a18e3e06ffd992cef2d5c8/app/api/auth/core-session/route.js), [PR #16 head: Actor session bootstrap](https://github.com/sykim-stack/brainpool-corenull/blob/03a6d9377dd277f2547b22e6d35bedbded8dd66e/app/api/corenull/session/route.js).
+
+## 49. 2026-11-27 §47 범위 정정: 일반 CoreNull 사용자는 로그인하지 않음
+
+§47은 Actor 발급 기준에 관한 당시 사용자의 선택을 기록한 것이다. 그 표현을 **CoreNull의 모든 쓰기 API 또는 일반 사용자 흐름에 적용되는 로그인 요구사항**으로 읽어서는 안 된다. 사용자는 일반 CoreNull 사용자가 로그인하지 않는다는 제품 범위를 재확인했다. 이 절은 §47의 넓게 읽힐 수 있는 표현을 다음과 같이 한정하며, §48의 종결 판단과 함께 읽는다.
+
+- §47의 verified Path S/handoff + 기존 `auth_user_id → owner_key` 확인 기준은 **Hajun/CoreHub와 CoreNull 간 연동·handoff를 사용하는 인증 경로에 한정**한다. 이는 일반 CoreNull 방문자·Owner의 기본 로그인, 계정 생성 또는 모든 쓰기 요청의 인증 조건을 추가하지 않는다.
+- 일반 CoreNull 쓰기와 익명 Owner 흐름은 기존 로그인 없는 제품 동작을 유지한다. PR #16의 Actor 검사 또는 handoff 조건을 전역 적용해 해당 쓰기를 차단하는 변경은 승인되지 않았다.
+- 반대로 owner key를 제시하는 것만으로 Actor cookie가 발급된다면 그것은 신원 확인·소유권 증명이 아니다. 이를 안전한 인증으로 설명하거나, 로그인 없는 일반 사용자 경로의 기존 권한 모델을 검증했다고 간주하지 않는다.
+- PR #16은 §48에 기록한 대로 closed/unmerged 상태로 둔다. 현재 이 PR에 대해 추가 코드 변경, 재개 또는 재조사는 계획되어 있지 않다. 향후 사용자가 별도로 요청하거나 실제 장애·보안 문제가 생기는 경우에만 최신 범위를 확인한다.
+
+**정정 효력:** §47은 연동용 handoff 보안 기준의 기록으로 한정해 해석한다. 일반 사용자 로그인 정책은 §15 및 이 정정 절의 “로그인 없음” 기준을 따른다. 이 정정은 새로운 인증 설계·구현 승인이나 PR 재개 승인이 아니다.
